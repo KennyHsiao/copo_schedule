@@ -38,9 +38,14 @@ func main() {
 		cron.WithChain(cron.SkipIfStillRunning(logger), cron.Recover(logger)),
 	)
 
-	c.AddJob("* * * * * *",
+	//c.AddJob("* * * * * *",
+	//	cron.NewChain().
+	//		Then(&cronjob.TestJob{}),
+	//)
+
+	c.AddJob("*/5 * * * * ?",
 		cron.NewChain().
-			Then(&cronjob.TestJob{}),
+			Then(&cronjob.ProxyToChannel{}),
 	)
 
 	c.Start()
