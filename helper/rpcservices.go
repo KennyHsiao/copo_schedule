@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+	_ "github.com/neccoys/go-zero-extension/consul"
 	"github.com/spf13/viper"
 	"github.com/zeromicro/go-zero/zrpc"
 	"log"
