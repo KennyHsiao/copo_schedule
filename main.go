@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/copo888/copo_schedule/cronjob"
 	"github.com/neccoys/promx"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
@@ -48,10 +47,10 @@ func main() {
 	//		Then(&cronjob.ProxyToChannel{}),
 	//)
 
-	c.AddJob("*/5 * * * * ?",
-		cron.NewChain().
-			Then(&cronjob.CalculateProfit{}),
-	)
+	//c.AddJob("*/5 * * * * ?",
+	//	cron.NewChain().
+	//		Then(&cronjob.CalculateProfit{}),
+	//)
 
 	c.Start()
 
