@@ -43,9 +43,14 @@ func main() {
 	//		Then(&cronjob.TestJob{}),
 	//)
 
+	//c.AddJob("*/5 * * * * ?",
+	//	cron.NewChain().
+	//		Then(&cronjob.ProxyToChannel{}),
+	//)
+
 	c.AddJob("*/5 * * * * ?",
 		cron.NewChain().
-			Then(&cronjob.ProxyToChannel{}),
+			Then(&cronjob.CalculateProfit{}),
 	)
 
 	c.Start()
