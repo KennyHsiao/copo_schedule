@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/copo888/transaction_service v0.0.0-20220429102048-31cdd93346b2
+	github.com/copo888/transaction_service v0.0.0-20220504021059-60252921365b
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/neccoys/go-zero-extension v0.0.0-20220411035408-307c413921de
 	github.com/zeromicro/go-zero v1.3.2

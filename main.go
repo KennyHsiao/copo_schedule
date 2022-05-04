@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/copo888/copo_schedule/cronjob"
 	"github.com/neccoys/promx"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
@@ -47,10 +48,11 @@ func main() {
 	//		Then(&cronjob.ProxyToChannel{}),
 	//)
 
-	//c.AddJob("*/5 * * * * ?",
-	//	cron.NewChain().
-	//		Then(&cronjob.CalculateProfit{}),
-	//)
+	// (補算傭金利潤Schedule) 整點開始每5分鐘執行
+	c.AddJob("0 0/5 * * * ?",
+		cron.NewChain().
+			Then(&cronjob.CalculateProfit{}),
+	)
 
 	c.Start()
 
