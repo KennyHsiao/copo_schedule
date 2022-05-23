@@ -54,8 +54,8 @@ func main() {
 			Then(&cronjob.CalculateProfit{}),
 	)
 
-	// (計算月傭金報表Schedule) 每月2號 00:00:00執行
-	c.AddJob("0 0 0 2 * ?",
+	// (計算月傭金報表Schedule) 每月2號 03:00:00執行
+	c.AddJob("0 0 3 2 * ?",
 		cron.NewChain().
 			Then(&cronjob.CommissionMonthReport{}),
 	)
