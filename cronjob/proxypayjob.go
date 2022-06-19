@@ -1,10 +1,16 @@
 package cronjob
 
 import (
+	"fmt"
 	"github.com/copo888/copo_schedule/common/constants"
+	"github.com/copo888/copo_schedule/common/model/vo"
 	"github.com/copo888/copo_schedule/common/types"
 	"github.com/copo888/copo_schedule/helper"
+	service "github.com/copo888/copo_schedule/service/asyncService"
+	"github.com/jinzhu/copier"
+	"github.com/spf13/viper"
 	"github.com/zeromicro/go-zero/core/logx"
+	"sync"
 	"time"
 )
 
@@ -13,11 +19,11 @@ type ProxyToChannel struct {
 
 func (l *ProxyToChannel) Run() {
 	var orders []types.OrderX
+	var updateOrders []types.OrderX
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).Find(&orders).Error; err != nil {
 		logx.Info("Err", err.Error())
 	}
-
-	updateOrders := orders
+	copier.Copy(updateOrders, orders)
 
 	logx.Infof("执行时间：%s，待处理-[代付提单]，共 %d 笔", time.Now().Format("2006-01-02 15:04:05"), len(orders))
 	if len(updateOrders) > 0 {
@@ -25,12 +31,53 @@ func (l *ProxyToChannel) Run() {
 		var IDs []int64
 		helper.COPO_DB.Table("tx_orders").Select("id").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).Find(&IDs)
 
-		if errUpdate := helper.COPO_DB.Table("tx_orders").Where("id IN (?)", IDs).Updates(map[string]interface{}{"status": "1", "updated_at": time.Now().UTC()}); errUpdate != nil {
+		if errUpdate := helper.COPO_DB.Table("tx_orders").Where("id IN (?)", IDs).Updates(map[string]interface{}{"status": "1"}).Error; errUpdate != nil {
 			logx.Info(errUpdate.Error)
 			logx.Infof("排程发送前先更新订单状态用，待处理 => 处理中 >> 更新异常，ERR: %v ", errUpdate)
-		} else {
-			logx.Info("已完成更新")
+			return
 		}
-	}
 
+		//呼叫渠道送出(異部處理)
+		wg := &sync.WaitGroup{}
+		wg.Add(len(updateOrders))
+		for _, order := range updateOrders {
+			if order.ChannelOrderNo != "" {
+				channel := types.ChannelData{}
+				if queryErr := helper.COPO_DB.Table("ch_channels").Where("code = ?", order.ChannelCode).Find(&channel); queryErr != nil {
+					logx.Error("queryErr: ", queryErr)
+				}
+
+				url := fmt.Sprintf("%s:%s/api/proxy-pay", viper.Get("CHANNEL_HOST"), channel.ChannelPort)
+				logx.Infof("發送代付處理請求To渠道: %v。 url: %s", order, url)
+
+				//異步調用-呼叫異步調用服務
+				resp := &vo.ProxyPayRespVO{}
+				updateOrder := &types.OrderX{}
+				go func() {
+					resp = service.AsyncProxyPayEvent(url, &order, wg)
+					logx.Infof("resp:%#v", resp)
+
+					if resp != nil {
+						proxyPayErrorNote := "渠道返还-" + resp.Message
+						if resp.Code == "1" { ////回复失败，都列为失败单，不管是否为网路异常....等
+							logx.Errorf("代付提单 %s 渠道交易失败讯息= %s", order.OrderNo, proxyPayErrorNote)
+							updateOrder.Status = constants.FAIL
+							updateOrder.RepaymentStatus = constants.REPAYMENT_WAIT
+
+							//TODO 通知訊息-异步调用-呼叫代付渠道发送代付提单服务异常
+							//restService.sendLineNotifyMessage("异步调用-呼叫代付渠道发送代付提单服务异常，channelCoding: "+orderVO.getChannelCoding()+"，网关网址:" +channelGateway +"，单号:"+orderVO.getProxyPayOrderNo()+ "，渠道返回:" +proxyPayErrorNote);
+						}
+
+						//若成功更新交易中、無須還款
+						copier.Copy(updateOrder, order)
+						updateOrder.Status = constants.TRANSACTION
+						updateOrder.RepaymentStatus = constants.REPAYMENT_NOT
+					}
+
+				}()
+			}
+		}
+		wg.Wait()
+		logx.Info("WaitGroup Finished")
+	}
 }

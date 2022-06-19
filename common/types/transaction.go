@@ -1751,6 +1751,7 @@ type Order struct {
 	MerchantBankAccount     string  `json:"merchantBankAccount"`  //商戶銀行帳號
 	MerchantBankNo          string  `json:"merchantBankNo"`       //商戶銀行代碼
 	MerchantBankName        string  `json:"merchantBankName"`     //商戶姓名
+	MerchantBankBranch      string  `json:"merchantBankBranch"`   //商戶銀行分行名
 	MerchantBankProvince    string  `json:"merchantBankProvince"` //商戶開戶縣市名
 	MerchantBankCity        string  `json:"merchantBankCity"`     //商戶開戶縣市名
 	MerchantAccountName     string  `json:"merchantAccountName"`  //開戶行名(代付、下發)

@@ -9,12 +9,14 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 )
 
 var (
-	COPO_DB *gorm.DB
-	REDIS   *redis.Client
-	err     error
+	COPO_DB     *gorm.DB
+	REDIS       *redis.Client
+	RpcServices sync.Map
+	err         error
 )
 
 func init() {
