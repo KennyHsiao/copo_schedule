@@ -43,9 +43,21 @@ func main() {
 	//		Then(&cronjob.TestJob{}),
 	//)
 
-	c.AddJob("*/5 * * * * ?",
+	//c.AddJob("*/5 * * * * ?",
+	//	cron.NewChain().
+	//		Then(&cronjob.ProxyToChannel{}),
+	//)
+
+	// (補算傭金利潤Schedule) 整點開始每5分鐘執行
+	c.AddJob("0 0/5 * * * ?",
 		cron.NewChain().
-			Then(&cronjob.ProxyToChannel{}),
+			Then(&cronjob.CalculateProfit{}),
+	)
+
+	// (計算月傭金報表Schedule) 每月2號 03:00:00執行
+	c.AddJob("0 0 3 2 * ?",
+		cron.NewChain().
+			Then(&cronjob.CommissionMonthReport{}),
 	)
 
 	c.Start()
