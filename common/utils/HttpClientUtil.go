@@ -13,7 +13,7 @@ import (
 )
 
 //Form
-//func SubmitForm2(url string,param url.Values) (*http.Response,error){
+//func SubmitForm2(url string,param url.Values) (*http.Response,errors){
 //
 //	fmt.Println(strings.NewReader(param.Encode()))
 //	req, err := http.NewRequest("POST", url, strings.NewReader(param.Encode()))
@@ -30,9 +30,9 @@ import (
 //	if err !=nil{
 //		logx.Error(err.Error())
 //	}
-//	fmt.Println("response Status:", resp.Status)
-//	fmt.Println("response Headers:", resp.Header)
-//	fmt.Println("response Body:", string(body))
+//	fmt.Println("errors Status:", resp.Status)
+//	fmt.Println("errors Headers:", resp.Header)
+//	fmt.Println("errors Body:", string(body))
 //	return resp,err
 //}
 
@@ -46,9 +46,9 @@ func SubmitForm(url string, param url.Values, context context.Context) (*gozzle.
 	if err != nil {
 		logx.Error("渠道返回错误: ", err.Error())
 	}
-	logx.Info("response Headers:", resp.Header)
-	logx.Info("response Status:", resp.Status())
-	logx.Info("response Body:", string(resp.Body()))
+	logx.Info("errors Headers:", resp.Header)
+	logx.Info("errors Status:", resp.Status())
+	logx.Info("errors Body:", string(resp.Body()))
 
 	return resp, nil
 }
@@ -66,9 +66,9 @@ func SubmitBOForm(url string, param interface{}, context context.Context) (*gozz
 	if err != nil {
 		logx.Error("渠道返回错误: ", err.Error())
 	}
-	logx.Info("response Headers:", resp.Header)
-	logx.Info("response Status:", resp.Status())
-	logx.Info("response Body:", string(resp.Body()))
+	logx.Info("errors Headers:", resp.Header)
+	logx.Info("errors Status:", resp.Status())
+	logx.Info("errors Body:", string(resp.Body()))
 
 	return resp, nil
 }
@@ -78,7 +78,7 @@ func SubmitJson() {
 
 }
 
-// Response HTTP-response struct
+// Response HTTP-errors struct
 type Response struct {
 	request *Request
 	status  int
