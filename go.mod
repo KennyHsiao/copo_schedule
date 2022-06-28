@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/copo888/transaction_service v0.0.0-20220623115540-71ead55ba37d
+	github.com/copo888/transaction_service v0.0.0-20220521140443-ef1be1f98faa
 	github.com/gioco-play/gozzle v0.0.0-20220214095646-81ab484dee5d
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.11.0
