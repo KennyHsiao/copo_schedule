@@ -197,3 +197,12 @@ func PKCS5UnPadding(origData []byte) []byte {
 	unpadding := int(origData[length-1])
 	return origData[:(length - unpadding)]
 }
+
+func GetDecimalPlaces(f float64) int {
+	numstr := fmt.Sprint(f)
+	tmp := strings.Split(numstr, ".")
+	if len(tmp) <= 1 {
+		return 0
+	}
+	return len(tmp[1])
+}

@@ -1,9 +1,11 @@
 package helper
 
 import (
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/neccoys/go-driver/mysqlx"
 	"github.com/spf13/viper"
+	"github.com/zeromicro/go-zero/zrpc"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
@@ -58,4 +60,24 @@ func init() {
 	if err != nil {
 		log.Panicln("REDIS Error:", err)
 	}
+}
+
+func RpcService(channel string) zrpc.Client {
+
+	rpc, ok := RpcServices.Load(channel)
+
+	if !ok {
+		Target := fmt.Sprintf("consul://%s/@?wait=14s", viper.GetString("CONSUL_TARGET"))
+		ch := strings.Replace(Target, "@", channel, 1)
+		client, err := zrpc.NewClientWithTarget(ch)
+
+		if err != nil {
+			log.Panicln("Consul Error:", err)
+		}
+
+		return client
+	}
+
+	return rpc.(zrpc.Client)
+
 }

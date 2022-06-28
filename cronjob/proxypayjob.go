@@ -23,7 +23,7 @@ func (l *ProxyToChannel) Run() {
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).Find(&orders).Error; err != nil {
 		logx.Info("Err", err.Error())
 	}
-	copier.Copy(updateOrders, orders)
+	copier.Copy(&updateOrders, &orders)
 
 	logx.Infof("执行时间：%s，待处理-[代付提单]，共 %d 笔", time.Now().Format("2006-01-02 15:04:05"), len(orders))
 	if len(updateOrders) > 0 {
@@ -41,7 +41,8 @@ func (l *ProxyToChannel) Run() {
 		wg := &sync.WaitGroup{}
 		wg.Add(len(updateOrders))
 		for _, order := range updateOrders {
-			if order.ChannelOrderNo != "" {
+			//没有回调渠道订单号，以及渠道回调时间/交易时间，才会发送到渠道
+			if order.ChannelOrderNo == "" && order.ChannelCallBackAt.IsZero() && order.TransAt.Time().IsZero() {
 				channel := types.ChannelData{}
 				if queryErr := helper.COPO_DB.Table("ch_channels").Where("code = ?", order.ChannelCode).Find(&channel); queryErr != nil {
 					logx.Error("queryErr: ", queryErr)
@@ -53,27 +54,28 @@ func (l *ProxyToChannel) Run() {
 				//異步調用-呼叫異步調用服務
 				resp := &vo.ProxyPayRespVO{}
 				updateOrder := &types.OrderX{}
+				var err error
 				go func() {
-					resp = service.AsyncProxyPayEvent(url, &order, wg)
+					resp, err = service.AsyncProxyPayEvent(url, &order, wg)
 					logx.Infof("resp:%#v", resp)
 
 					if resp != nil {
 						proxyPayErrorNote := "渠道返还-" + resp.Message
 						if resp.Code == "1" { ////回复失败，都列为失败单，不管是否为网路异常....等
-							logx.Errorf("代付提单 %s 渠道交易失败讯息= %s", order.OrderNo, proxyPayErrorNote)
+							logx.Errorf("代付提单: %s ，渠道交易失败讯息: %s", order.OrderNo, proxyPayErrorNote)
 							updateOrder.Status = constants.FAIL
 							updateOrder.RepaymentStatus = constants.REPAYMENT_WAIT
 
 							//TODO 通知訊息-异步调用-呼叫代付渠道发送代付提单服务异常
 							//restService.sendLineNotifyMessage("异步调用-呼叫代付渠道发送代付提单服务异常，channelCoding: "+orderVO.getChannelCoding()+"，网关网址:" +channelGateway +"，单号:"+orderVO.getProxyPayOrderNo()+ "，渠道返回:" +proxyPayErrorNote);
+							logx.Errorf("异步调用-呼叫代付渠道发送代付提单服务异常，channelCoding: %s，网关网址:%s，单号:%s，渠道返回:%s", updateOrder.ChannelCode, url, updateOrder.OrderNo, proxyPayErrorNote)
 						}
 
-						//若成功更新交易中、無須還款
+						//若成功则更新交易中、無須還款
 						copier.Copy(updateOrder, order)
 						updateOrder.Status = constants.TRANSACTION
 						updateOrder.RepaymentStatus = constants.REPAYMENT_NOT
 					}
-
 				}()
 			}
 		}
