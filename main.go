@@ -72,6 +72,11 @@ func main() {
 			Then(&cronjob.CommissionMonthReport{}),
 	)
 
+	// (計算月收益報表Schedule) 每月2號 05:00:00執行 '
+	c.AddJob("0 0 5 2 * ?",
+		cron.NewChain().
+			Then(&cronjob.MonthProfitReport{}),
+	)
 	c.Start()
 
 	// prometheus
