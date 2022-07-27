@@ -14,3 +14,8 @@ type ProxyPayBO struct {
 	ReceiptCardBankCode  string `json:"receiptCardBankCode"`
 	ReceiptCardBankName  string `json:"receiptCardBankName"`
 }
+
+type ProxyQueryBO struct {
+	OrderNo        string `json:"orderNo"` //渠道
+	ChannelOrderNo string `json:"channelOrderNo"`
+}
