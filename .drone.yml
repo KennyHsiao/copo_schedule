@@ -27,7 +27,7 @@ steps:
         - docker rmi -f $(docker images --filter="reference=schedule_service" --quiet)
         - docker rmi -f $(docker images -qf "dangling=true")
         - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin main.go
-        - docker build -t schedule_service -f boadmin/Dockerfile .
+        - docker build -t schedule_service -f Dockerfile .
         - docker-compose up -d
     when:
       branch:
