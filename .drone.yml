@@ -1,5 +1,5 @@
 kind: pipeline
-name: schedule_service
+name: copo_schedule
 
 clone:
   disable: true
@@ -17,17 +17,17 @@ steps:
       port:
         from_secret: port
       script:
-        - cd /root/schedule_service
+        - cd /root/copo_schedule
         - git checkout -- .
         - git checkout dev
         - git pull origin dev
         - git checkout -- .
         - go mod tidy
         - docker-compose down
-        - docker rmi -f $(docker images --filter="reference=schedule_service" --quiet)
+        - docker rmi -f $(docker images --filter="reference=copo_schedule" --quiet)
         - docker rmi -f $(docker images -qf "dangling=true")
-        - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin boadmin.go
-        - docker build -t schedule_service -f boadmin/Dockerfile .
+        - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin main.go
+        - docker build -t copo_schedule -f boadmin/Dockerfile .
         - docker-compose up -d
     when:
       branch:
