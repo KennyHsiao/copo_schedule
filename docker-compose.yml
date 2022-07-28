@@ -1,0 +1,9 @@
+version: "2"
+services:
+  schedule_service:
+    container_name: schedule_service
+    image: schedule_service
+    volumes:
+      - /root/logs/copo_schedule:/app/logs
+    restart: always
+    network_mode: host
