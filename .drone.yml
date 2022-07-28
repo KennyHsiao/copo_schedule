@@ -1,5 +1,5 @@
 kind: pipeline
-name: copo_schedule
+name: schedule_service
 
 clone:
   disable: true
