@@ -5,7 +5,7 @@ clone:
   disable: true
 
 steps:
-  - name: docker
+  - name: schedule_service
     image: appleboy/drone-ssh
     settings:
       host:
@@ -26,7 +26,8 @@ steps:
         - docker-compose down
         - docker rmi -f $(docker images --filter="reference=schedule_service" --quiet)
         - docker rmi -f $(docker images -qf "dangling=true")
-        - docker build -t schedule_service -f Dockerfile .
+        - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/schedule_service main.go
+        - docker build -t schedule_service -f Dockerfile_dev .
         - docker-compose up -d
     when:
       branch:
