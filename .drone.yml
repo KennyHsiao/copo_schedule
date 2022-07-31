@@ -1,0 +1,36 @@
+kind: pipeline
+name: schedule_service
+
+clone:
+  disable: true
+
+steps:
+  - name: schedule_service
+    image: appleboy/drone-ssh
+    settings:
+      host:
+        from_secret: host
+      username:
+        from_secret: user
+      password:
+        from_secret: pwd
+      port:
+        from_secret: port
+      script:
+        - cd /root/copo_schedule
+        - git checkout -- .
+        - git checkout dev
+        - git pull origin dev
+        - git checkout -- .
+        - go mod tidy
+        - docker-compose down
+        - docker rmi -f $(docker images --filter="reference=schedule_service" --quiet)
+        - docker rmi -f $(docker images -qf "dangling=true")
+        - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -o schedule_service main.go
+        - docker build -t schedule_service -f Dockerfile .
+        - docker-compose up -d
+    when:
+      branch:
+        - dev
+      event:
+        - push
