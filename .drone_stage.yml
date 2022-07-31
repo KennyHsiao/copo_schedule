@@ -19,8 +19,8 @@ steps:
       script:
         - cd /root/copo_schedule
         - git checkout -- .
-        - git checkout dev
-        - git pull origin dev
+        - git checkout stage
+        - git pull origin stage
         - git checkout -- .
         - go mod tidy
         - docker-compose down
