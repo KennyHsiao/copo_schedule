@@ -45,7 +45,7 @@ func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitG
 	defer wg.Done()
 	logx.Info("异步调代付渠道服务(Restful或Service)====================>开始")
 	logx.Infof("发送代付提单 %s 处理请求 To 渠道：%s 网关地址:%s", order.OrderNo, order.ChannelCode, url)
-	var context context.Context
+	context := context.Background()
 	// 1. call 渠道app
 	//var chnErr error
 	//proxyPayRespVO := &vo.ProxyPayRespVO{} //接渠道返回的物件
@@ -64,20 +64,22 @@ func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitG
 		rpc := transactionclient.NewTransaction(helper.RpcService("transaction.rpc"))
 		var resRpc *transaction.ProxyPayFailResponse
 		var errRpc error
+
+		//呼叫RPC
+		rpcRequest := transaction.ProxyPayFailRequest{
+			MerchantCode: order.MerchantCode,
+			OrderNo:      order.OrderNo,
+		}
+
 		//transaction: 1 .将商户钱包加回 (merchantCode, orderNO) 2. 更新狀態為失敗單
 		if order.BalanceType == "DFB" {
-			resRpc, errRpc = rpc.ProxyOrderTransactionFail_DFB(context, &transaction.ProxyPayFailRequest{
-				MerchantCode: order.MerchantCode,
-				OrderNo:      order.OrderNo,
-			})
+			resRpc, errRpc = rpc.ProxyOrderTransactionFail_DFB(context, &rpcRequest)
 		} else if order.BalanceType == "XFB" {
-			resRpc, errRpc = rpc.ProxyOrderTransactionFail_XFB(context, &transaction.ProxyPayFailRequest{
-				MerchantCode: order.MerchantCode,
-				OrderNo:      order.OrderNo,
-			})
+			resRpc, errRpc = rpc.ProxyOrderTransactionFail_XFB(context, &rpcRequest)
 		}
 
 		if errRpc != nil {
+			logx.Errorf("schedule代付提单 %s 还款失败。 Err: %s", order.OrderNo, errRpc.Error())
 			return nil, errorz.New(errors.TRANSACTION_FAILURE)
 		}
 

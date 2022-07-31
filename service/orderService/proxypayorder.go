@@ -76,6 +76,7 @@ func CallChannel_ProxyOrder(context *context.Context, url string, respOrder *typ
 	} else if proxyPayRespVO.Code != "0" {
 		return proxyPayRespVO, errorz.New(proxyPayRespVO.Code, proxyPayRespVO.Message)
 	} else if proxyPayRespVO.Data.ChannelOrderNo == "" {
+		logx.Errorf("渠道未回传渠道订单号,%#v", proxyPayRespVO)
 		return proxyPayRespVO, errorz.New(errors.INVALID_CHANNEL_ORDER_NO, "渠道未回传渠道订单号")
 	}
 
@@ -116,9 +117,11 @@ func CallChannel_ProxyQuery(span trace.Span, url string, order *types.OrderX) (*
 		return nil, errorz.New(response.CHANNEL_REPLY_ERROR, decodeErr.Error())
 	} else if proxyPayRespVO.Code != "0" {
 		return proxyPayRespVO, errorz.New(proxyPayRespVO.Code, proxyPayRespVO.Message)
-	} else if proxyPayRespVO.Data.ChannelOrderNo == "" {
-		return proxyPayRespVO, errorz.New(errors.INVALID_CHANNEL_ORDER_NO, "渠道未回传渠道订单号")
 	}
+	//渠道為回傳訂單號，之後看狀況加入
+	//else if proxyPayRespVO.Data.ChannelOrderNo == "" {
+	//	return proxyPayRespVO, errorz.New(errors.INVALID_CHANNEL_ORDER_NO, "渠道未回传渠道订单号")
+	//}
 
 	logx.Infof("proxyPayRespVO : %#v", proxyPayRespVO)
 	return proxyPayRespVO, nil
