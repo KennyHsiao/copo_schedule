@@ -28,7 +28,7 @@ import (
 //	defer resp.Body.Close()
 //	body, err := ioutil.ReadAll(resp.Body)
 //	if err !=nil{
-//		logx.Error(err.Error())
+//		logx.WithContext(context).Error(err.Error())
 //	}
 //	fmt.Println("errors Status:", resp.Status)
 //	fmt.Println("errors Headers:", resp.Header)
@@ -37,24 +37,24 @@ import (
 //}
 
 func SubmitForm(url string, param url.Values, context context.Context) (*gozzle.Response, error) {
-	logx.Info(strings.NewReader(param.Encode()))
+	logx.WithContext(context).Info(strings.NewReader(param.Encode()))
 	span := trace.SpanFromContext(context)
 
 	t := http.DefaultTransport.(*http.Transport)
 
 	resp, err := gozzle.Post(url).Transport(t).Timeout(10).Trace(span).Form(param)
 	if err != nil {
-		logx.Error("渠道返回错误: ", err.Error())
+		logx.WithContext(context).Error("渠道返回错误: ", err.Error())
 	}
-	logx.Info("errors Headers:", resp.Header)
-	logx.Info("errors Status:", resp.Status())
-	logx.Info("errors Body:", string(resp.Body()))
+	logx.WithContext(context).Info("errors Headers:", resp.Header)
+	logx.WithContext(context).Info("errors Status:", resp.Status())
+	logx.WithContext(context).Info("errors Body:", string(resp.Body()))
 
 	return resp, nil
 }
 
 func SubmitBOForm(url string, param interface{}, context context.Context) (*gozzle.Response, error) {
-	logx.Info(param)
+	logx.WithContext(context).Info(param)
 	span := trace.SpanFromContext(context)
 
 	//resp, err := http.Post("https://httpbin.org/anything", "application/json",
@@ -64,11 +64,11 @@ func SubmitBOForm(url string, param interface{}, context context.Context) (*gozz
 	t.MaxConnsPerHost = 100 //最大連線池數
 	resp, err := gozzle.Post(url).Transport(t).Timeout(10).Trace(span).JSON(param)
 	if err != nil {
-		logx.Error("渠道返回错误: ", err.Error())
+		logx.WithContext(context).Error("渠道返回错误: ", err.Error())
 	}
-	logx.Info("errors Headers:", resp.Header)
-	logx.Info("errors Status:", resp.Status())
-	logx.Info("errors Body:", string(resp.Body()))
+	logx.WithContext(context).Info("errors Headers:", resp.Header)
+	logx.WithContext(context).Info("errors Status:", resp.Status())
+	logx.WithContext(context).Info("errors Body:", string(resp.Body()))
 
 	return resp, nil
 }

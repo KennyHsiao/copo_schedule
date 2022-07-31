@@ -32,32 +32,32 @@ func PostCallbackToMerchant(db *gorm.DB, context *context.Context, orderX *types
 	status := changeOrderStatusToMerchant(orderX.Status)
 
 	ProxyPayCallBackMerRespVO := url.Values{}
-	ProxyPayCallBackMerRespVO.Set("MerchantId", orderX.MerchantCode)
-	ProxyPayCallBackMerRespVO.Set("OrderNo", orderX.MerchantOrderNo)
-	ProxyPayCallBackMerRespVO.Set("PayOrderNo", orderX.OrderNo)
-	ProxyPayCallBackMerRespVO.Set("OrderStatus", status)
-	ProxyPayCallBackMerRespVO.Set("OrderAmount", fmt.Sprintf("%.2f", orderX.OrderAmount))
-	ProxyPayCallBackMerRespVO.Set("Fee", fmt.Sprintf("%.2f", orderX.Fee))
-	ProxyPayCallBackMerRespVO.Set("PayOrderTime", orderX.TransAt.Time().Format("200601021504"))
+	ProxyPayCallBackMerRespVO.Set("merchantId", orderX.MerchantCode)
+	ProxyPayCallBackMerRespVO.Set("orderNo", orderX.MerchantOrderNo)
+	ProxyPayCallBackMerRespVO.Set("payOrderNo", orderX.OrderNo)
+	ProxyPayCallBackMerRespVO.Set("orderStatus", status)
+	ProxyPayCallBackMerRespVO.Set("orderAmount", fmt.Sprintf("%.2f", orderX.OrderAmount))
+	ProxyPayCallBackMerRespVO.Set("fee", fmt.Sprintf("%.2f", orderX.Fee))
+	ProxyPayCallBackMerRespVO.Set("payOrderTime", orderX.TransAt.Time().Format("200601021504"))
 
 	if err != nil {
-		logx.Error(err.Error())
+		logx.WithContext(*context).Error(err.Error())
 	}
 	sign := utils.SortAndSignFromUrlValues(ProxyPayCallBackMerRespVO, merchant.ScrectKey)
 	ProxyPayCallBackMerRespVO.Set("Sign", sign)
-	logx.Infof("代付提单 %s ，回调商户URL= %s，回调资讯= %#v", orderX.OrderNo, orderX.NotifyUrl, ProxyPayCallBackMerRespVO)
+	logx.WithContext(*context).Infof("代付提单 %s ，回调商户URL= %s，回调资讯= %#v", orderX.OrderNo, orderX.NotifyUrl, ProxyPayCallBackMerRespVO)
 
 	//TODO retry post for 10 times and 2s between each reqeuest
 	//merResp, merCallBackErr := gozzle.Post("http://172.16.204.115:8083/dior/merchant-api/merchant-call-back").Timeout(10).Trace(span).Form(ProxyPayCallBackMerRespVO)
-	merResp, merCallBackErr := gozzle.Post(orderX.NotifyUrl).Timeout(10).Trace(span).JSON(ProxyPayCallBackMerRespVO)
+	merResp, merCallBackErr := gozzle.Post(orderX.NotifyUrl).Timeout(10).Trace(span).Form(ProxyPayCallBackMerRespVO)
 	if merCallBackErr != nil || merResp.Status() != 200 {
 		if merCallBackErr != nil {
-			logx.Errorf("代付提单%s 回调商户异常，錯誤: %#v", ProxyPayCallBackMerRespVO.Get("OrderNo"), merCallBackErr)
+			logx.WithContext(*context).Errorf("代付提单%s 回调商户异常，錯誤: %#v", ProxyPayCallBackMerRespVO.Get("OrderNo"), merCallBackErr)
 		} else if merResp.Status() != 200 {
-			logx.Errorf("响应状态 %d 错误", merResp.Status())
+			logx.WithContext(*context).Errorf("响应状态 %d 错误", merResp.Status())
 		}
 	}
-	logx.Infof("代付提单 %s ，回调商户請求參數 %#v，商戶返回: %#v", ProxyPayCallBackMerRespVO.Get("OrderNo"), ProxyPayCallBackMerRespVO, string(merResp.Body()))
+	logx.WithContext(*context).Infof("代付提单 %s ，回调商户請求參數 %#v，商戶返回: %#v", ProxyPayCallBackMerRespVO.Get("OrderNo"), ProxyPayCallBackMerRespVO, string(merResp.Body()))
 	return
 }
 
