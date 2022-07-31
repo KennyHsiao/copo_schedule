@@ -32,13 +32,13 @@ func PostCallbackToMerchant(db *gorm.DB, context *context.Context, orderX *types
 	status := changeOrderStatusToMerchant(orderX.Status)
 
 	ProxyPayCallBackMerRespVO := url.Values{}
-	ProxyPayCallBackMerRespVO.Set("MerchantId", orderX.MerchantCode)
-	ProxyPayCallBackMerRespVO.Set("OrderNo", orderX.MerchantOrderNo)
-	ProxyPayCallBackMerRespVO.Set("PayOrderNo", orderX.OrderNo)
-	ProxyPayCallBackMerRespVO.Set("OrderStatus", status)
-	ProxyPayCallBackMerRespVO.Set("OrderAmount", fmt.Sprintf("%.2f", orderX.OrderAmount))
-	ProxyPayCallBackMerRespVO.Set("Fee", fmt.Sprintf("%.2f", orderX.Fee))
-	ProxyPayCallBackMerRespVO.Set("PayOrderTime", orderX.TransAt.Time().Format("200601021504"))
+	ProxyPayCallBackMerRespVO.Set("merchantId", orderX.MerchantCode)
+	ProxyPayCallBackMerRespVO.Set("orderNo", orderX.MerchantOrderNo)
+	ProxyPayCallBackMerRespVO.Set("payOrderNo", orderX.OrderNo)
+	ProxyPayCallBackMerRespVO.Set("orderStatus", status)
+	ProxyPayCallBackMerRespVO.Set("orderAmount", fmt.Sprintf("%.2f", orderX.OrderAmount))
+	ProxyPayCallBackMerRespVO.Set("fee", fmt.Sprintf("%.2f", orderX.Fee))
+	ProxyPayCallBackMerRespVO.Set("payOrderTime", orderX.TransAt.Time().Format("200601021504"))
 
 	if err != nil {
 		logx.Error(err.Error())
@@ -49,7 +49,7 @@ func PostCallbackToMerchant(db *gorm.DB, context *context.Context, orderX *types
 
 	//TODO retry post for 10 times and 2s between each reqeuest
 	//merResp, merCallBackErr := gozzle.Post("http://172.16.204.115:8083/dior/merchant-api/merchant-call-back").Timeout(10).Trace(span).Form(ProxyPayCallBackMerRespVO)
-	merResp, merCallBackErr := gozzle.Post(orderX.NotifyUrl).Timeout(10).Trace(span).JSON(ProxyPayCallBackMerRespVO)
+	merResp, merCallBackErr := gozzle.Post(orderX.NotifyUrl).Timeout(10).Trace(span).Form(ProxyPayCallBackMerRespVO)
 	if merCallBackErr != nil || merResp.Status() != 200 {
 		if merCallBackErr != nil {
 			logx.Errorf("代付提单%s 回调商户异常，錯誤: %#v", ProxyPayCallBackMerRespVO.Get("OrderNo"), merCallBackErr)
