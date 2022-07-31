@@ -5,6 +5,7 @@ import (
 	"github.com/neccoys/promx"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
+	"github.com/zeromicro/go-zero/core/logx"
 	"log"
 	"os"
 	"os/signal"
@@ -24,6 +25,13 @@ func init() {
 }
 
 func main() {
+
+	var logConf logx.LogConf
+	logConf.Mode = "file"
+	logConf.Level = "info"
+	logConf.KeepDays = 30
+	logConf.Path = "logs"
+	logx.MustSetup(logConf)
 
 	runtime.GOMAXPROCS(runtime.NumCPU() - 2)
 
