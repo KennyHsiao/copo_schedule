@@ -23,28 +23,35 @@ type ProxyPayEvent struct {
 	ctx context.Context
 }
 
-func AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitGroup) (respVO *vo.ProxyPayRespVO, err error) {
+func NewProxyPayEvent(ctx context.Context) ProxyPayEvent {
+	return ProxyPayEvent{
+		Logger: logx.WithContext(ctx),
+		ctx:    ctx,
+	}
+}
+
+func (l *ProxyPayEvent) AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitGroup) (respVO *vo.ProxyPayRespVO, err error) {
 	redisKey := fmt.Sprintf("%s-%s", order.MerchantCode, order.OrderNo)
 	redisLock := redislock.New(helper.REDIS, redisKey, "proxy-call-back:")
 	redisLock.SetExpire(5)
 	//为避免代付提单在发送过程中，三方渠道突然callback回调，导致余状态异常，故增加一把Redis Lock 原则上没送单之前，应该不会有任何动作产生
 	if isOK, _ := redisLock.Acquire(); isOK {
-		if respVO, err = internal_AsyncProxyPayEvent(url, order, wg); err != nil {
+		if respVO, err = l.internal_AsyncProxyPayEvent(url, order, wg); err != nil {
 			return nil, err
 		}
 		defer redisLock.Release()
 	} else {
 		//为避免已经有其他逻辑正在处里，故这边不对Redis Lock抛出的Exception做任何处里
-		logx.Infof("提单 %s 目前正在处理中(Redis Lock)，无法发送", order.OrderNo)
+		logx.WithContext(l.ctx).Infof("提单 %s 目前正在处理中(Redis Lock)，无法发送", order.OrderNo)
 		return nil, errorz.New(errors.INSERT_REDIS_FAILURE)
 	}
 	return respVO, nil
 }
 
-func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitGroup) (*vo.ProxyPayRespVO, error) {
+func (l *ProxyPayEvent) internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitGroup) (*vo.ProxyPayRespVO, error) {
 	defer wg.Done()
-	logx.Info("异步调代付渠道服务(Restful或Service)====================>开始")
-	logx.Infof("发送代付提单 %s 处理请求 To 渠道：%s 网关地址:%s", order.OrderNo, order.ChannelCode, url)
+	logx.WithContext(l.ctx).Info("异步调代付渠道服务(Restful或Service)====================>开始")
+	logx.WithContext(l.ctx).Infof("发送代付提单 %s 处理请求 To 渠道：%s 网关地址:%s", order.OrderNo, order.ChannelCode, url)
 	context := context.Background()
 	// 1. call 渠道app
 	//var chnErr error
@@ -52,14 +59,14 @@ func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitG
 	var respOrder = &types.OrderX{} // 返回上層的TxOrder物件
 	var queryErr error
 	if respOrder, queryErr = orderService.QueryOrderByOrderNo(helper.COPO_DB, order.OrderNo, ""); queryErr != nil {
-		logx.Errorf("撈取代付訂單錯誤: %s, respOrder:%#v", queryErr, respOrder)
+		logx.WithContext(context).Errorf("撈取代付訂單錯誤: %s, respOrder:%#v", queryErr, respOrder)
 		return nil, errorz.New(errors.FAIL, queryErr.Error())
 	}
 
 	proxyPayRespVO, chnErr := orderService.CallChannel_ProxyOrder(&context, url, order)
 	// 2. 渠道返回處理 錯誤:商戶錢包加回
 	if chnErr != nil || proxyPayRespVO.Code != "0" { //將渠道回傳的錯誤訊息用proxyPayRespVO回傳
-		logx.Errorf("代付提單: %s ，渠道返回錯誤: %s, %#v", order.OrderNo, chnErr, proxyPayRespVO)
+		logx.WithContext(context).Errorf("代付提單: %s ，渠道返回錯誤: %s, %#v", order.OrderNo, chnErr, proxyPayRespVO)
 
 		rpc := transactionclient.NewTransaction(helper.RpcService("transaction.rpc"))
 		var resRpc *transaction.ProxyPayFailResponse
@@ -79,13 +86,13 @@ func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitG
 		}
 
 		if errRpc != nil {
-			logx.Errorf("schedule代付提单 %s 还款失败。 Err: %s", order.OrderNo, errRpc.Error())
+			logx.WithContext(context).Errorf("schedule代付提单 %s 还款失败。 Err: %s", order.OrderNo, errRpc.Error())
 			return nil, errorz.New(errors.TRANSACTION_FAILURE)
 		}
 
 		//因在transaction_service 已更新過訂單，重新抓取訂單
 		if respOrder, queryErr := orderService.QueryOrderByOrderNo(helper.COPO_DB, order.OrderNo, ""); queryErr != nil {
-			logx.Errorf("撈取代付訂單錯誤: %s, respOrder:%#v", queryErr, respOrder)
+			logx.WithContext(context).Errorf("撈取代付訂單錯誤: %s, respOrder:%#v", queryErr, respOrder)
 			return nil, errorz.New(errors.DATABASE_FAILURE, queryErr.Error())
 		}
 
@@ -93,11 +100,11 @@ func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitG
 		respOrder.ErrorNote = "渠道返回错误: " + proxyPayRespVO.Message
 
 		if errRpc != nil {
-			logx.Errorf("代付提单 %s 还款失败。 Err: %s", respOrder.OrderNo, errRpc.Error())
+			logx.WithContext(context).Errorf("代付提单 %s 还款失败。 Err: %s", respOrder.OrderNo, errRpc.Error())
 			respOrder.RepaymentStatus = constants.REPAYMENT_FAIL
 			return nil, errorz.New(errors.FAIL, errRpc.Error())
 		} else {
-			logx.Infof("代付還款rpc完成，%s 錢包還款完成: %#v", order.BalanceType, resRpc)
+			logx.WithContext(context).Infof("代付還款rpc完成，%s 錢包還款完成: %#v", order.BalanceType, resRpc)
 			respOrder.RepaymentStatus = constants.REPAYMENT_SUCCESS
 		}
 	} else {
@@ -108,7 +115,7 @@ func internal_AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitG
 
 	// 更新订单
 	if errUpdate := helper.COPO_DB.Table("tx_orders").Updates(&respOrder).Error; errUpdate != nil {
-		logx.Error("代付订单更新状态错误: ", errUpdate.Error())
+		logx.WithContext(context).Error("代付订单更新状态错误: ", errUpdate.Error())
 	}
 
 	return proxyPayRespVO, nil

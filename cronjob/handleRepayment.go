@@ -1,6 +1,7 @@
 package cronjob
 
 import (
+	"context"
 	"fmt"
 	"github.com/copo888/copo_schedule/common/constants"
 	"github.com/copo888/copo_schedule/common/types"
@@ -12,6 +13,8 @@ import (
 )
 
 type HandleRepayment struct {
+	logx.Logger
+	ctx context.Context
 }
 
 /*
@@ -30,10 +33,10 @@ func (l *HandleRepayment) Run() {
 	if err := helper.COPO_DB.Table("tx_orders").
 		Where("`type` = ? AND (repayment_status IN ('1','3')) AND (person_process_status = '10' OR person_process_status is null)", constants.ORDER_TYPE_DF).
 		Find(&orders).Error; err != nil {
-		logx.Errorf("Err : %s", err.Error())
+		logx.WithContext(l.ctx).Errorf("Err : %s", err.Error())
 	}
 
-	logx.Infof("还款失败及待还款提单V2，待处理共 %d 笔, %#v", len(orders), orders)
+	logx.WithContext(l.ctx).Infof("还款失败及待还款提单V2，待处理共 %d 笔, %#v", len(orders), orders)
 	//前往渠道查单(异步处理)
 	wg := &sync.WaitGroup{}
 	wg.Add(len(orders))
@@ -41,20 +44,20 @@ func (l *HandleRepayment) Run() {
 		for _, order := range orders {
 			channel := types.ChannelData{}
 			if queryErr := helper.COPO_DB.Table("ch_channels").Where("code = ?", order.ChannelCode).Find(&channel); queryErr != nil {
-				logx.Errorf("queryErr: %#v", queryErr.Error)
+				logx.WithContext(l.ctx).Errorf("queryErr: %#v", queryErr.Error)
 			}
 			url := fmt.Sprintf("%s:%s/api/proxy-pay-query", viper.Get("CHANNEL_HOST"), channel.ChannelPort)
-			logx.Infof("發送代付查询請求To渠道: %s。 url: %s", order.OrderNo, url)
+			logx.WithContext(l.ctx).Infof("發送代付查询請求To渠道: %s。 url: %s", order.OrderNo, url)
 
 			//異步調用-呼叫異步調用服務
 			go func() {
 				if err := service.AsyncProxyPayRepayment(url, &order, wg); err != nil {
-					logx.Errorf("排程代付人工處理呼叫失敗: %s，Error:%s", order.OrderNo, err.Error())
+					logx.WithContext(l.ctx).Errorf("排程代付人工處理呼叫失敗: %s，Error:%s", order.OrderNo, err.Error())
 				}
 			}()
 		}
 		wg.Wait()
-		logx.Info("WaitGroup Finished")
+		logx.WithContext(l.ctx).Info("WaitGroup Finished")
 	}
 
 }

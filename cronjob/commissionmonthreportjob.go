@@ -11,6 +11,8 @@ import (
 )
 
 type CommissionMonthReport struct {
+	logx.Logger
+	ctx context.Context
 }
 
 func (l *CommissionMonthReport) Run() {
@@ -18,7 +20,7 @@ func (l *CommissionMonthReport) Run() {
 	location, _ := time.LoadLocation("Asia/Taipei")
 	month := time.Now().In(location).Format("2006-01")
 
-	logx.Infof("(計算月傭金報表 Schedule) %s 執行開始時間：%s", month, time.Now().Format("2006-01-02 15:04:05"))
+	logx.WithContext(l.ctx).Infof("(計算月傭金報表 Schedule) %s 執行開始時間：%s", month, time.Now().Format("2006-01-02 15:04:05"))
 
 	rpcRequest := transaction.CalculateCommissionMonthAllRequest{
 		Month: month,
@@ -28,13 +30,13 @@ func (l *CommissionMonthReport) Run() {
 	rpcResp, err := rpc.CalculateCommissionMonthAllReport(context.Background(), &rpcRequest)
 
 	if err != nil {
-		logx.Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", err.Error())
+		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", err.Error())
 	} else if rpcResp == nil {
-		logx.Errorf("(計算月傭金報表 Schedule)發生錯誤：rpcResp is nil")
+		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：rpcResp is nil")
 	} else if rpcResp.Code != response.API_SUCCESS {
-		logx.Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", rpcResp.Message)
+		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", rpcResp.Message)
 	} else {
-		logx.Errorf("(計算月傭金報表 Schedule) 完成")
+		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule) 完成")
 	}
-	logx.Infof("(計算月傭金報表 Schedule) %s 執行結束時間：%s", month, time.Now().Format("2006-01-02 15:04:05"))
+	logx.WithContext(l.ctx).Infof("(計算月傭金報表 Schedule) %s 執行結束時間：%s", month, time.Now().Format("2006-01-02 15:04:05"))
 }

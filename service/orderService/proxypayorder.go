@@ -54,38 +54,38 @@ func CallChannel_ProxyOrder(context *context.Context, url string, respOrder *typ
 	if errk != nil {
 		return nil, errorz.New(response.GENERAL_EXCEPTION, errk.Error())
 	}
-	logx.Infof("EncryptKey: %s，ProxyKey:%s ，PublicKey:%s ", ProxyKey, viper.GetString("PROXY_KEY"), viper.GetString("PUBLIC_KEY"))
+	logx.WithContext(*context).Infof("EncryptKey: %s，ProxyKey:%s ，PublicKey:%s ", ProxyKey, viper.GetString("PROXY_KEY"), viper.GetString("PUBLIC_KEY"))
 	chnResp, chnErr := gozzle.Post(url).Timeout(10).Trace(span).Header("authenticationProxykey", ProxyKey).JSON(ProxyPayBO)
 	//res, err2 := http.Post(url,"application/json",bytes.NewBuffer(body))
 	if chnResp != nil {
-		logx.Info("errors Status:", chnResp.Status())
-		logx.Info("errors Body:", string(chnResp.Body()))
+		logx.WithContext(*context).Info("errors Status:", chnResp.Status())
+		logx.WithContext(*context).Info("errors Body:", string(chnResp.Body()))
 	}
 
 	proxyPayRespVO := &vo.ProxyPayRespVO{}
 
 	if chnErr != nil {
-		logx.Errorf("渠道返回错误: %s， resp: %#v", chnErr.Error(), chnResp)
+		logx.WithContext(*context).Errorf("渠道返回错误: %s， resp: %#v", chnErr.Error(), chnResp)
 		return nil, errorz.New(response.CHANNEL_REPLY_ERROR, chnErr.Error())
 	} else if chnResp.Status() != 200 {
-		logx.Errorf("渠道返回不正确: %d", chnResp.Status())
+		logx.WithContext(*context).Errorf("渠道返回不正确: %d", chnResp.Status())
 		return nil, errorz.New(response.INVALID_STATUS_CODE, fmt.Sprintf("%d", chnResp.Status()))
 	} else if decodeErr := chnResp.DecodeJSON(proxyPayRespVO); decodeErr != nil {
-		logx.Errorf("渠道返回错误: %s， resp: %#v", decodeErr.Error(), decodeErr)
+		logx.WithContext(*context).Errorf("渠道返回错误: %s， resp: %#v", decodeErr.Error(), decodeErr)
 		return nil, errorz.New(response.CHANNEL_REPLY_ERROR, decodeErr.Error())
 	} else if proxyPayRespVO.Code != "0" {
 		return proxyPayRespVO, errorz.New(proxyPayRespVO.Code, proxyPayRespVO.Message)
 	} else if proxyPayRespVO.Data.ChannelOrderNo == "" {
-		logx.Errorf("渠道未回传渠道订单号,%#v", proxyPayRespVO)
+		logx.WithContext(*context).Errorf("渠道未回传渠道订单号,%#v", proxyPayRespVO)
 		return proxyPayRespVO, errorz.New(errors.INVALID_CHANNEL_ORDER_NO, "渠道未回传渠道订单号")
 	}
 
-	logx.Infof("proxyPayRespVO : %#v", proxyPayRespVO)
+	logx.WithContext(*context).Infof("proxyPayRespVO : %#v", proxyPayRespVO)
 	return proxyPayRespVO, nil
 }
 
-func CallChannel_ProxyQuery(span trace.Span, url string, order *types.OrderX) (*vo.ProxyQueryRespVO, error) {
-
+func CallChannel_ProxyQuery(context *context.Context, url string, order *types.OrderX) (*vo.ProxyQueryRespVO, error) {
+	span := trace.SpanFromContext(*context)
 	proxyQuery := &bo.ProxyQueryBO{
 		OrderNo:        order.OrderNo,
 		ChannelOrderNo: order.ChannelOrderNo,
@@ -96,24 +96,24 @@ func CallChannel_ProxyQuery(span trace.Span, url string, order *types.OrderX) (*
 	if errk != nil {
 		return nil, errorz.New(response.GENERAL_EXCEPTION, errk.Error())
 	}
-	logx.Infof("EncryptKey: %s，ProxyKey:%s ，PublicKey:%s ", ProxyKey, viper.GetString("PROXY_KEY"), viper.GetString("PUBLIC_KEY"))
+	logx.WithContext(*context).Infof("EncryptKey: %s，ProxyKey:%s ，PublicKey:%s ", ProxyKey, viper.GetString("PROXY_KEY"), viper.GetString("PUBLIC_KEY"))
 	chnResp, chnErr := gozzle.Post(url).Timeout(10).Trace(span).Header("authenticationProxykey", ProxyKey).JSON(proxyQuery)
 	//res, err2 := http.Post(url,"application/json",bytes.NewBuffer(body))
 	if chnResp != nil {
-		logx.Info("errors Status:", chnResp.Status())
-		logx.Info("errors Body:", string(chnResp.Body()))
+		logx.WithContext(*context).Info("errors Status:", chnResp.Status())
+		logx.WithContext(*context).Info("errors Body:", string(chnResp.Body()))
 	}
 
 	proxyPayRespVO := &vo.ProxyQueryRespVO{}
 
 	if chnErr != nil {
-		logx.Errorf("渠道返回错误: %s， resp: %#v", chnErr.Error(), chnResp)
+		logx.WithContext(*context).Errorf("渠道返回错误: %s， resp: %#v", chnErr.Error(), chnResp)
 		return nil, errorz.New(response.CHANNEL_REPLY_ERROR, chnErr.Error())
 	} else if chnResp.Status() != 200 {
-		logx.Errorf("渠道返回不正确: %d", chnResp.Status())
+		logx.WithContext(*context).Errorf("渠道返回不正确: %d", chnResp.Status())
 		return nil, errorz.New(response.INVALID_STATUS_CODE, fmt.Sprintf("%d", chnResp.Status()))
 	} else if decodeErr := chnResp.DecodeJSON(proxyPayRespVO); decodeErr != nil {
-		logx.Errorf("渠道返回错误: %s， resp: %#v", decodeErr.Error(), decodeErr)
+		logx.WithContext(*context).Errorf("渠道返回错误: %s， resp: %#v", decodeErr.Error(), decodeErr)
 		return nil, errorz.New(response.CHANNEL_REPLY_ERROR, decodeErr.Error())
 	} else if proxyPayRespVO.Code != "0" {
 		return proxyPayRespVO, errorz.New(proxyPayRespVO.Code, proxyPayRespVO.Message)
@@ -123,7 +123,7 @@ func CallChannel_ProxyQuery(span trace.Span, url string, order *types.OrderX) (*
 	//	return proxyPayRespVO, errorz.New(errors.INVALID_CHANNEL_ORDER_NO, "渠道未回传渠道订单号")
 	//}
 
-	logx.Infof("proxyPayRespVO : %#v", proxyPayRespVO)
+	logx.WithContext(*context).Infof("proxyPayRespVO : %#v", proxyPayRespVO)
 	return proxyPayRespVO, nil
 
 	return nil, nil

@@ -10,26 +10,24 @@ import (
 	"github.com/copo888/transaction_service/rpc/transaction"
 	"github.com/copo888/transaction_service/rpc/transactionclient"
 	"github.com/zeromicro/go-zero/core/logx"
-	"go.opentelemetry.io/otel/trace"
 	"sync"
 	"time"
 )
 
 func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup) error {
 	defer wg.Done()
-	logx.Info("异步人工處理(Restful或Service)====================>开始")
 	context := context.Background()
-	span := trace.SpanFromContext(context)
+	logx.WithContext(context).Info("异步人工處理(Restful或Service)====================>开始")
 
 	var repayment_flag bool = false //使否执行还款
 	var callBack bool = false       //是否回调商户
 	//call 渠道查詢訂單
-	proxyQueryRespVO, chnErr := orderService.CallChannel_ProxyQuery(span, url, order)
-	logx.Infof("提单单号: %s，渠道订单查询结果: %s ", order.OrderNo, proxyQueryRespVO.Data.OrderStatus) //(0:待處理 1:處理中 20:成功 30:失敗 31:凍結)
+	proxyQueryRespVO, chnErr := orderService.CallChannel_ProxyQuery(&context, url, order)
+	logx.WithContext(context).Infof("提单单号: %s，渠道订单查询结果: %s ", order.OrderNo, proxyQueryRespVO.Data.OrderStatus) //(0:待處理 1:處理中 20:成功 30:失敗 31:凍結)
 	//查询回传status=0，成功才执行(失败有可能是网路异常或是网关错误...等)
 	if chnErr != nil || proxyQueryRespVO.Code != "0" {
 		//查询状态回传失败(异常)，改为人工处里状态、单状态修改为失败
-		logx.Errorf("查询状态回传失败(异常): %s", chnErr.Error())
+		logx.WithContext(context).Errorf("查询状态回传失败(异常): %s", chnErr.Error())
 		helper.COPO_DB.Table("tx_orders").
 			Where("order_no = ?", order.OrderNo).
 			Updates(map[string]interface{}{"status": "30", "person_process_status": "0", "repayment_status": "1", "error_note": "查询状态回传失败(异常)"})
@@ -43,7 +41,7 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 				Comment:     "",
 			},
 		}).Error; err4 != nil {
-			logx.Error("紀錄訂單歷程出錯:%s", err4.Error())
+			logx.WithContext(context).Error("紀錄訂單歷程出錯:%s", err4.Error())
 		}
 
 		//TODO 发送人工还款推播信息
@@ -65,23 +63,23 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 				order.MerchantCallBackAt = time.Now().UTC()
 			}
 			//更新提单information状态
-			logx.Infof("排程查询提单状态成功单，更新代付主表资讯：%#v", order)
+			logx.WithContext(context).Infof("排程查询提单状态成功单，更新代付主表资讯：%#v", order)
 			// 更新订单
 			if errUpdate := helper.COPO_DB.Table("tx_orders").Updates(order).Error; errUpdate != nil {
-				logx.Errorf("代付订单更新状态错误: %s", errUpdate.Error())
+				logx.WithContext(context).Errorf("代付订单更新状态错误: %s", errUpdate.Error())
 			}
 
 			//回调商户
 			if order.Source == constants.API && callBack {
 				if errPoseMer := service.PostCallbackToMerchant(helper.COPO_DB, &context, order); errPoseMer != nil {
 					//不拋錯
-					logx.Error("回調商戶錯誤:", errPoseMer)
+					logx.WithContext(context).Error("回調商戶錯誤:", errPoseMer)
 				}
 			}
 
 		} else if proxyQueryRespVO.Data.OrderStatus == "30" { //失敗
 			//查寻结果：交易失败，执行还款作业
-			logx.Infof("提单 %s 查寻结果：交易失败，执行还款作业", order.OrderNo)
+			logx.WithContext(context).Infof("提单 %s 查寻结果：交易失败，执行还款作业", order.OrderNo)
 			//修正重新查询回来后，确认为失败时，复写错误原因
 			repayment_flag = true
 			order.ErrorNote = "渠道查询-交易失敗"      //复写错误原因
@@ -106,10 +104,10 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 		}
 
 		//更新提单information状态
-		logx.Infof("排程查询提单状态失败单，更新代付资讯：%#v", order)
+		logx.WithContext(context).Infof("排程查询提单状态失败单，更新代付资讯：%#v", order)
 		// 更新订单
 		if errUpdate := helper.COPO_DB.Table("tx_orders").Updates(order).Error; errUpdate != nil {
-			logx.Errorf("代付订单更新状态错误: %s", errUpdate.Error())
+			logx.WithContext(context).Errorf("代付订单更新状态错误: %s", errUpdate.Error())
 			return errUpdate
 		}
 
@@ -131,14 +129,14 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 				Comment:     "",
 			},
 		}).Error; err4 != nil {
-			logx.Error("紀錄訂單歷程出錯:%s", err4.Error())
+			logx.WithContext(context).Error("紀錄訂單歷程出錯:%s", err4.Error())
 		}
 
 	}
 
 	//進行人工還款
 	if repayment_flag {
-		logx.Infof("执行还款，還款單號:%s", order.OrderNo)
+		logx.WithContext(context).Infof("执行还款，還款單號:%s", order.OrderNo)
 		var errRpc error
 		balanceType, errBalance := service.GetBalanceType(helper.COPO_DB, order.ChannelCode, constants.ORDER_TYPE_DF)
 		if errBalance != nil {
@@ -162,18 +160,18 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 			}
 
 			if errRpc != nil {
-				logx.Errorf("代付提单回调 %s 还款失败。 Err: %s", order.OrderNo, errRpc.Error())
+				logx.WithContext(context).Errorf("代付提单回调 %s 还款失败。 Err: %s", order.OrderNo, errRpc.Error())
 				order.RepaymentStatus = constants.REPAYMENT_FAIL
 				return errRpc
 			} else {
-				logx.Infof("代付還款rpc完成，%s 錢包還款完成: %#v", balanceType, resRpc)
+				logx.WithContext(context).Infof("代付還款rpc完成，%s 錢包還款完成: %#v", balanceType, resRpc)
 				order.RepaymentStatus = constants.REPAYMENT_SUCCESS
 				//TODO 收支紀錄
 			}
 
 			// 更新订单
 			if errUpdate := helper.COPO_DB.Table("tx_orders").Updates(order).Error; errUpdate != nil {
-				logx.Error("代付订单更新状态错误: ", errUpdate.Error())
+				logx.WithContext(context).Error("代付订单更新状态错误: ", errUpdate.Error())
 			}
 		}
 
@@ -181,10 +179,10 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 
 	//回调商户
 	if order.Source == constants.API && callBack {
-		logx.Infof("代付订单回调状态码: %s，增加主动回调API订单：%s=======================================>", order.Status, order.OrderNo)
+		logx.WithContext(context).Infof("代付订单回调状态码: %s，增加主动回调API订单：%s=======================================>", order.Status, order.OrderNo)
 		if errPoseMer := service.PostCallbackToMerchant(helper.COPO_DB, &context, order); errPoseMer != nil {
 			//不拋錯
-			logx.Error("回調商戶錯誤:", errPoseMer)
+			logx.WithContext(context).Error("回調商戶錯誤:", errPoseMer)
 		}
 	}
 	return nil
