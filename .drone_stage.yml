@@ -34,3 +34,6 @@ steps:
         - stage
       event:
         - push
+trigger:
+  branch:
+    - stage
