@@ -18,7 +18,7 @@ type CommissionMonthReport struct {
 func (l *CommissionMonthReport) Run() {
 
 	location, _ := time.LoadLocation("Asia/Taipei")
-	month := time.Now().In(location).Format("2006-01")
+	month := time.Now().In(location).AddDate(0, -1, 0).Format("2006-01")
 
 	logx.WithContext(l.ctx).Infof("(計算月傭金報表 Schedule) %s 執行開始時間：%s", month, time.Now().Format("2006-01-02 15:04:05"))
 
