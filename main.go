@@ -89,7 +89,7 @@ func main() {
 	)
 
 	// (計算月收益報表Schedule) 每月2號 05:00:00執行 '
-	c.AddJob("0 0 5 2 * ?",
+	c.AddJob("0 0 3 5 * ?",
 		cron.NewChain().
 			Then(&cronjob.MonthProfitReport{}),
 	)
