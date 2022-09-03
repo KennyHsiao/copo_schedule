@@ -39,7 +39,7 @@ func CallChannel_ProxyOrder(context *context.Context, url string, respOrder *typ
 		OrderNo:              respOrder.OrderNo,
 		TransactionType:      constants.TRANS_TYPE_PROXY_PAY,
 		TransactionAmount:    valTrans,
-		ReceiptAccountNumber: respOrder.MerchantBankNo,
+		ReceiptAccountNumber: respOrder.MerchantBankAccount,
 		ReceiptAccountName:   respOrder.MerchantAccountName,
 		ReceiptCardProvince:  respOrder.MerchantBankProvince,
 		ReceiptCardCity:      respOrder.MerchantBankCity,
