@@ -52,10 +52,10 @@ func main() {
 	//)
 
 	//90 秒抓取代付單[代處理]重送渠道
-	c.AddJob("*/90 * * * * ?",
-		cron.NewChain().
-			Then(&cronjob.ProxyToChannel{}),
-	)
+	//c.AddJob("*/90 * * * * ?",
+	//	cron.NewChain().
+	//		Then(&cronjob.ProxyToChannel{}),
+	//)
 
 	/**
 	 * 处里回调发生还款失败异及等待还款的提单，重新补还款机制(还款失败，代表回调成功，但还款在写入资料库时异常)
