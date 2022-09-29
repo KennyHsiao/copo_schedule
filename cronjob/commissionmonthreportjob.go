@@ -2,7 +2,9 @@ package cronjob
 
 import (
 	"context"
+	"fmt"
 	"github.com/copo888/copo_schedule/helper"
+	"github.com/copo888/copo_schedule/service/linenotifyService"
 	"github.com/copo888/transaction_service/common/response"
 	"github.com/copo888/transaction_service/rpc/transaction"
 	"github.com/copo888/transaction_service/rpc/transactionclient"
@@ -31,10 +33,16 @@ func (l *CommissionMonthReport) Run() {
 
 	if err != nil {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", err.Error())
+		msg := fmt.Sprintf("(計算月傭金報表 Schedule)發生錯誤：'%s'", err.Error())
+		linenotifyService.DoCallLineSendURL(l.ctx, msg)
 	} else if rpcResp == nil {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：rpcResp is nil")
+		msg := fmt.Sprintf("(計算月傭金報表 Schedule)發生錯誤：rpcResp is nil")
+		linenotifyService.DoCallLineSendURL(l.ctx, msg)
 	} else if rpcResp.Code != response.API_SUCCESS {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", rpcResp.Message)
+		msg := fmt.Sprintf("(計算月傭金報表 Schedule)發生錯誤：'%s'", rpcResp.Message)
+		linenotifyService.DoCallLineSendURL(l.ctx, msg)
 	} else {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule) 完成")
 	}

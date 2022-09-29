@@ -70,6 +70,9 @@ func (l *ProxyToChannel) Run() {
 				var err error
 				go func() {
 					resp, err = p.AsyncProxyPayEvent(url, &order, wg)
+					if err != nil{
+						logx.WithContext(l.ctx).Infof("resp:%s", err)
+					}
 					logx.WithContext(l.ctx).Infof("resp:%#v", resp)
 
 					if resp != nil {
