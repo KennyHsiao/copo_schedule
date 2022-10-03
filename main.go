@@ -83,14 +83,14 @@ func main() {
 	)
 
 	// (計算月傭金報表Schedule) 每月2號 03:00:00執行
-	c.AddJob("0 0 3 2 * ?",
+	//c.AddJob("0 0 3 2 * ?",
+	c.AddJob("0 0/10 * * * ?",
 		cron.NewChain().
 			Then(&cronjob.CommissionMonthReport{}),
 	)
 
 	// (計算月收益報表Schedule) 每月5號 03:00:00執行 '
-	//c.AddJob("0 0 3 5 * ?",
-	c.AddJob("0 0/10 * * * ?",
+	c.AddJob("0 0 3 5 * ?",
 		cron.NewChain().
 			Then(&cronjob.MonthProfitReport{}),
 	)
