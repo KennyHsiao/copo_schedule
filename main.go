@@ -93,6 +93,12 @@ func main() {
 		cron.NewChain().
 			Then(&cronjob.MonthProfitReport{}),
 	)
+
+	// (查询渠道馀额Schedule) 整點開始每5分鐘執行 '
+	c.AddJob("0 0/5 * * * ?",
+		cron.NewChain().
+		Then(&cronjob.ChannelBalance{}),
+		)
 	c.Start()
 
 	// prometheus
