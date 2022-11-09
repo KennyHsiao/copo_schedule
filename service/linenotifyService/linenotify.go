@@ -12,7 +12,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func DoCallLineSendURL (ctx context.Context, message string) error {
+func DoCallLineSendURL(ctx context.Context, message string) error {
 	span := trace.SpanFromContext(ctx)
 	notifyUrl := fmt.Sprintf("%s:%d/line/send", viper.GetString("LINE_HOST"), viper.GetInt("LINE_PORT"))
 	data := struct {
