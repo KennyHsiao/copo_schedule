@@ -32,7 +32,7 @@ func (l *ProxyToChannel) Run() {
 	var updateOrders []types.OrderX
 
 	p := service.NewProxyPayEvent(l.ctx)
-
+	//TODO 要抓代付創建時間超過五分鐘(避免merchant_service 打到渠道中，重複傳送)
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).Find(&orders).Error; err != nil {
 		logx.WithContext(l.ctx).Info("Err", err.Error())
 	}

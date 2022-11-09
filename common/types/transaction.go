@@ -2485,3 +2485,14 @@ type ChannelBankQueryAllRequest struct {
 type ChannelBankQueryAllResponse struct {
 	ChannelBankList []ChannelBank `json:"channelBankList"`
 }
+
+type SystemParams struct {
+	Name  string
+	Type  string
+	Value string
+	Title string
+}
+
+type TelegramNotifyRequest struct {
+	Message string `json:"message"`
+}
