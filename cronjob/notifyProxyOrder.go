@@ -25,7 +25,7 @@ func (l *NotifyProxyOrder) Run() {
 	//1.取出代付提单的订单状态[3：交易中]的提单 2. created_at - currentTime >5 min
 	if err := helper.COPO_DB.Table("tx_orders").
 		Where("`type` = ? AND `status` = ?", constants.ORDER_TYPE_DF, constants.TRANSACTION).
-		Where("TIMESTAMPADD(DAY, " + fmt.Sprintf("-%s", systemParam.Value) + ",DATE_FORMAT(CURRENT_TIMESTAMP(),'%Y-%m-%d %T')) < created_at").
+		Where("TIMESTAMPADD(MINUTE, " + fmt.Sprintf("-%s", systemParam.Value) + ",DATE_FORMAT(CURRENT_TIMESTAMP(),'%Y-%m-%d %T')) < created_at").
 		Find(&orders).Error; err != nil {
 		logx.WithContext(l.ctx).Errorf("Err : %s", err.Error())
 	}
