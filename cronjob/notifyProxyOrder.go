@@ -34,7 +34,7 @@ func (l *NotifyProxyOrder) Run() {
 		var msg string
 		msg = fmt.Sprintf("代付提单超过%s分钟未处理： \n", systemParam.Value)
 		for _, order := range orders {
-			msg += fmt.Sprintf("商户号：%s，订单号：%s，提单金额：%.0f \n", order.MerchantCode, order.OrderNo, order.OrderAmount)
+			msg += fmt.Sprintf("商户号：%s\n订单号：%s\n提单金额：%.0f \n\n", order.MerchantCode, order.OrderNo, order.OrderAmount)
 		}
 
 		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
