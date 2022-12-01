@@ -25,16 +25,16 @@ func (l *NotifyProxyOrder) Run() {
 	//1.取出代付提单的订单状态[3：交易中]的提单 2. created_at - currentTime >5 min
 	if err := helper.COPO_DB.Table("tx_orders").
 		Where("`type` = ? AND `status` = ?", constants.ORDER_TYPE_DF, constants.TRANSACTION).
-		Where("TIMESTAMPADD(DAY, " + fmt.Sprintf("-%s", systemParam.Value) + ",DATE_FORMAT(CURRENT_TIMESTAMP(),'%Y-%m-%d %T')) < created_at").
+		Where("TIMESTAMPADD(MINUTE, " + fmt.Sprintf("-%s", systemParam.Value) + ",DATE_FORMAT(CURRENT_TIMESTAMP(),'%Y-%m-%d %T')) > TIMESTAMPADD(HOUR, 8,DATE_FORMAT(created_at,'%Y-%m-%d %T'))").
 		Find(&orders).Error; err != nil {
 		logx.WithContext(l.ctx).Errorf("Err : %s", err.Error())
 	}
 
 	if len(orders) > 0 {
 		var msg string
-		msg = "代付超過五分鐘未回调的提单: \n"
+		msg = fmt.Sprintf("代付提单超过%s分钟未处理： \n", systemParam.Value)
 		for _, order := range orders {
-			msg += fmt.Sprintf("%s:%f \n", order.OrderNo, order.OrderAmount)
+			msg += fmt.Sprintf("商户号：%s\n订单号：%s\n提单金额：%.0f \n\n", order.MerchantCode, order.OrderNo, order.OrderAmount)
 		}
 
 		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
