@@ -43,7 +43,7 @@ func main() {
 	c := cron.New(
 		cron.WithLogger(logger),
 		cron.WithSeconds(),
-		cron.WithChain(cron.SkipIfStillRunning(logger), cron.Recover(logger)),
+		//cron.WithChain(cron.SkipIfStillRunning(logger), cron.Recover(logger)),
 	)
 
 	//c.AddJob("* * * * * *",
@@ -59,7 +59,7 @@ func main() {
 
 	//1分鐘查餘額
 	c.AddJob("0 0/1 * * * * ?", //1分鐘)
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.QueryChannelBalance{}),
 	)
 	/**
@@ -67,7 +67,7 @@ func main() {
 	 * 备注：每3分钟处理一次还款
 	 */
 	c.AddJob("0 0/3 * * * * ?", //3分鐘
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.HandleRepayment{}),
 	)
 
@@ -75,7 +75,7 @@ func main() {
 	代付交易中的单，5分钟没有回调则通知警讯
 	*/
 	c.AddJob("0 0/5 * * * * ?", //5分鐘
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.NotifyProxyOrder{}),
 	)
 
@@ -91,25 +91,25 @@ func main() {
 
 	// (補算傭金利潤Schedule) 整點開始每5分鐘執行
 	c.AddJob("0 0/5 * * * ?",
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.CalculateProfit{}),
 	)
 
 	// (計算月傭金報表Schedule) 每月2號 03:00:00執行
 	c.AddJob("0 0 3 2 * ?",
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.CommissionMonthReport{}),
 	)
 
 	// (計算月收益報表Schedule) 每月5號 03:00:00執行 '
 	c.AddJob("0 0 3 5 * ?",
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.MonthProfitReport{}),
 	)
 
 	// (查询渠道馀额Schedule) 整點開始每5分鐘執行 '
 	c.AddJob("0 0/5 * * * ?",
-		cron.NewChain().
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 		Then(&cronjob.ChannelBalance{}),
 		)
 	c.Start()
