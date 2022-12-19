@@ -7,7 +7,6 @@ import (
 	"github.com/copo888/copo_schedule/helper"
 	"github.com/copo888/transaction_service/common/response"
 	"github.com/copo888/transaction_service/rpc/transaction"
-	"github.com/copo888/transaction_service/rpc/transactionclient"
 	"github.com/zeromicro/go-zero/core/logx"
 	"time"
 )
@@ -59,7 +58,7 @@ func (l *CalculateProfit) Run() {
 			})
 		}
 
-		rpc := transactionclient.NewTransaction(helper.RpcService("transaction.rpc"))
+		rpc := helper.TransactionRpc
 		rpcResp, err := rpc.RecalculateProfitTransaction(context.Background(), &transaction.RecalculateProfitRequest{
 			List: profits,
 		})

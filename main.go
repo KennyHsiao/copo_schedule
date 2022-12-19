@@ -25,7 +25,6 @@ func init() {
 }
 
 func main() {
-
 	var logConf logx.LogConf
 	logConf.Mode = "file"
 	logConf.Level = "info"
@@ -39,6 +38,12 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	logger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
+
+
+	//transactionClient := zrpc.MustNewClient(zrpc.RpcClientConf{
+	//	Target: fmt.Sprintf("consul://%s/transaction.rpc?wait=14s", viper.GetString("CONSUL_TARGET")),
+	//})
+	//transactionRpc := transactionclient.NewTransaction(transactionClient)
 
 	c := cron.New(
 		cron.WithLogger(logger),
@@ -60,7 +65,9 @@ func main() {
 	//1分鐘查餘額
 	c.AddJob("0 0/1 * * * * ?", //1分鐘)
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.QueryChannelBalance{}),
+			Then(&cronjob.QueryChannelBalance{
+
+		}),
 	)
 	/**
 	 * 处里回调发生还款失败异及等待还款的提单，重新补还款机制(还款失败，代表回调成功，但还款在写入资料库时异常)
@@ -96,7 +103,7 @@ func main() {
 	)
 
 	// (計算月傭金報表Schedule) 每月2號 03:00:00執行
-	c.AddJob("0 0 3 2 * ?",
+	c.AddJob("0 0/1 * * * ?",
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.CommissionMonthReport{}),
 	)
@@ -110,8 +117,8 @@ func main() {
 	// (查询渠道馀额Schedule) 整點開始每5分鐘執行 '
 	c.AddJob("0 0/5 * * * ?",
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
-		Then(&cronjob.ChannelBalance{}),
-		)
+			Then(&cronjob.ChannelBalance{}),
+	)
 	c.Start()
 
 	// prometheus

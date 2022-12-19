@@ -11,7 +11,6 @@ import (
 	"github.com/copo888/copo_schedule/service/orderService"
 	"github.com/copo888/transaction_service/common/errorz"
 	"github.com/copo888/transaction_service/rpc/transaction"
-	"github.com/copo888/transaction_service/rpc/transactionclient"
 	"github.com/neccoys/go-zero-extension/redislock"
 	"github.com/zeromicro/go-zero/core/logx"
 	"golang.org/x/net/context"
@@ -68,7 +67,7 @@ func (l *ProxyPayEvent) internal_AsyncProxyPayEvent(url string, order *types.Ord
 	if chnErr != nil || proxyPayRespVO.Code != "0" { //將渠道回傳的錯誤訊息用proxyPayRespVO回傳
 		logx.WithContext(context).Errorf("代付提單: %s ，渠道返回錯誤: %s, %#v", order.OrderNo, chnErr, proxyPayRespVO)
 
-		rpc := transactionclient.NewTransaction(helper.RpcService("transaction.rpc"))
+		rpc := helper.TransactionRpc
 		var resRpc *transaction.ProxyPayFailResponse
 		var errRpc error
 

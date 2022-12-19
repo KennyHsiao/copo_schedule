@@ -7,7 +7,6 @@ import (
 	"github.com/copo888/copo_schedule/service/linenotifyService"
 	"github.com/copo888/transaction_service/common/response"
 	"github.com/copo888/transaction_service/rpc/transaction"
-	"github.com/copo888/transaction_service/rpc/transactionclient"
 	"github.com/zeromicro/go-zero/core/logx"
 	"time"
 )
@@ -28,7 +27,7 @@ func (l *CommissionMonthReport) Run() {
 		Month: month,
 	}
 	// CALL transactionc
-	rpc := transactionclient.NewTransaction(helper.RpcService("transaction.rpc"))
+	rpc := helper.TransactionRpc
 	rpcResp, err := rpc.CalculateCommissionMonthAllReport(context.Background(), &rpcRequest)
 
 	if err != nil {

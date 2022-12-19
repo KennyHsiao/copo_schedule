@@ -8,7 +8,6 @@ import (
 	service "github.com/copo888/copo_schedule/service/merchantService"
 	"github.com/copo888/copo_schedule/service/orderService"
 	"github.com/copo888/transaction_service/rpc/transaction"
-	"github.com/copo888/transaction_service/rpc/transactionclient"
 	"github.com/zeromicro/go-zero/core/logx"
 	"sync"
 	"time"
@@ -144,7 +143,7 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 		}
 
 		//呼叫RPC
-		rpc := transactionclient.NewTransaction(helper.RpcService("transaction.rpc"))
+		rpc := helper.TransactionRpc
 		rpcRequest := transaction.ProxyPayFailRequest{
 			MerchantCode: order.MerchantCode,
 			OrderNo:      order.OrderNo,
