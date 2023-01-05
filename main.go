@@ -119,6 +119,12 @@ func main() {
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.ChannelBalance{}),
 	)
+
+	// (查询渠道馀额紀錄 Schedule) 整點開始執行 '
+	c.AddJob("0 0 * * * ?",
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.ChannelBalanceRecord{}),
+	)
 	c.Start()
 
 	// prometheus
