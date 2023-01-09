@@ -39,7 +39,7 @@ func PostCallbackToMerchant(db *gorm.DB, context *context.Context, orderX *types
 	ProxyPayCallBackMerRespVO.Set("orderAmount", fmt.Sprintf("%.2f", orderX.OrderAmount))
 	ProxyPayCallBackMerRespVO.Set("fee", fmt.Sprintf("%.2f", orderX.Fee))
 	ProxyPayCallBackMerRespVO.Set("payOrderTime", orderX.TransAt.Time().Format("200601021504"))
-	if orderX.MerchantCode == "ME00335" {
+	if orderX.CurrencyCode == "PHP" {
 		ProxyPayCallBackMerRespVO.Set("errorNote", orderX.ErrorNote)
 	}
 
