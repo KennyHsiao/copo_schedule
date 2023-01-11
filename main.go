@@ -39,7 +39,6 @@ func main() {
 
 	logger := cron.VerbosePrintfLogger(log.New(os.Stdout, "cron: ", log.LstdFlags))
 
-
 	//transactionClient := zrpc.MustNewClient(zrpc.RpcClientConf{
 	//	Target: fmt.Sprintf("consul://%s/transaction.rpc?wait=14s", viper.GetString("CONSUL_TARGET")),
 	//})
@@ -65,9 +64,7 @@ func main() {
 	//1分鐘查餘額
 	c.AddJob("0 0/1 * * * * ?", //1分鐘)
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.QueryChannelBalance{
-
-		}),
+			Then(&cronjob.QueryChannelBalance{}),
 	)
 	/**
 	 * 处里回调发生还款失败异及等待还款的提单，重新补还款机制(还款失败，代表回调成功，但还款在写入资料库时异常)
@@ -81,7 +78,7 @@ func main() {
 	/**
 	代付交易中的单，5分钟没有回调则通知警讯
 	*/
-	c.AddJob("0 0/5 * * * * ?", //5分鐘
+	c.AddJob("0 0/2 * * * * ?", //5分鐘
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.NotifyProxyOrder{}),
 	)
