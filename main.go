@@ -76,9 +76,9 @@ func main() {
 	)
 
 	/**
-	代付交易中的单，5分钟没有回调则通知警讯
+	代付交易中的单，2分钟没有回调则通知警讯
 	*/
-	c.AddJob("0 0/2 * * * * ?", //5分鐘
+	c.AddJob("0 0/2 * * * * ", //2分鐘
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.NotifyProxyOrder{}),
 	)
