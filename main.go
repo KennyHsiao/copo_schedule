@@ -122,6 +122,12 @@ func main() {
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.ChannelBalanceRecord{}),
 	)
+
+	// (搬移资料到备份表 Schedule) 每日5點開始執行 '
+	c.AddJob("0 0 5 * * ?",
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.BackupData{}),
+	)
 	c.Start()
 
 	// prometheus
