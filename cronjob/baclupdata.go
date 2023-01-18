@@ -21,11 +21,11 @@ func (l *BackupData) Run() {
 
 	res, errx := gozzle.Post(backUpUrl).Timeout(20).Trace(span).JSON("")
 	if res != nil {
-		logx.WithContext(l.ctx).Info("Channel Balance Record response Status:", res.Status())
-		logx.WithContext(l.ctx).Info("Channel Balance Record response Body:", string(res.Body()))
+		logx.WithContext(l.ctx).Info("Backup Data response Status:", res.Status())
+		logx.WithContext(l.ctx).Info("Backup Data response Body:", string(res.Body()))
 	}
 	if errx != nil {
-		logx.WithContext(l.ctx).Errorf("Channel Balance Record ERROR: %s", errx.Error())
+		logx.WithContext(l.ctx).Errorf("Backup Data ERROR: %s", errx.Error())
 	}
 	logx.WithContext(l.ctx).Info("Channel Balance Record End ")
 }
