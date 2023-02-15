@@ -22,11 +22,15 @@ func (l *CalculateProfit) Run() {
 	var allOrders []types.OrderX
 	var profits []*transaction.CalculateProfit
 
+	queryTime := time.Now().Add(-time.Hour * 8).Add(-time.Second * 30).Format("2006-01-02 15:04:05")
+
 	logx.WithContext(l.ctx).Infof("(補算傭金利潤Schedule)執行開始時間：%s", time.Now().Format("2006-01-02 15:04:05"))
+	logx.WithContext(l.ctx).Infof("(補算傭金利潤Schedule)撈取時間：%s", queryTime)
 	if err := helper.COPO_DB.Table("tx_orders").
 		Where("status != ?", constants.FAIL).
 		Where("is_calculate_profit = ?", constants.IS_CALCULATE_PROFIT_NO).
 		Where("type = ? ", constants.ORDER_TYPE_DF).
+		Where("created_at < ? ", queryTime).
 		Find(&dfOrders).Error; err != nil {
 
 		logx.WithContext(l.ctx).Errorf("取得未計算利潤(DF)錯誤:", err.Error())
@@ -35,6 +39,7 @@ func (l *CalculateProfit) Run() {
 		Where("status IN (?)", []string{constants.SUCCESS, constants.FROZEN}).
 		Where("is_calculate_profit = ?", constants.IS_CALCULATE_PROFIT_NO).
 		Where("type = ? ", constants.ORDER_TYPE_ZF).
+		Where("created_at < ? ", queryTime).
 		Find(&zfOrders).Error; err != nil {
 
 		logx.WithContext(l.ctx).Errorf("取得未計算利潤(ZF)錯誤:", err.Error())
@@ -42,7 +47,7 @@ func (l *CalculateProfit) Run() {
 	allOrders = append(allOrders, dfOrders...)
 	allOrders = append(allOrders, zfOrders...)
 
-	logx.WithContext(l.ctx).Infof("(補算傭金利潤Schedule)共 %d 筆, 支付 %d 筆, 代付 %d 筆", len(allOrders), len(dfOrders), len(zfOrders))
+	logx.WithContext(l.ctx).Infof("(補算傭金利潤Schedule)共 %d 筆, 支付 %d 筆, 代付 %d 筆", len(allOrders), len(zfOrders), len(dfOrders))
 
 	if len(allOrders) > 0 {
 		for _, txOrder := range allOrders {
