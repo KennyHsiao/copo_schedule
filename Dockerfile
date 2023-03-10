@@ -7,4 +7,4 @@ WORKDIR /app
 COPY bin/schedule_service /app
 COPY etc /app/etc
 
-CMD ["./", "-env" , "etc/.env"]
+CMD ["/app/schedule_service", "-env" , "etc/.env"]
