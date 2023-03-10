@@ -4,6 +4,6 @@ services:
     container_name: schedule_service
     image: schedule_service
     volumes:
-      - /root/schedule_service/logs:/app/logs
+      - /root/logs/schedule_service:/app/logs
     restart: always
     network_mode: host
