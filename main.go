@@ -62,10 +62,10 @@ func main() {
 	)
 
 	//1分鐘查餘額
-	c.AddJob("0 0/1 * * * * ?", //1分鐘)
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.QueryChannelBalance{}),
-	)
+	//c.AddJob("0 0/1 * * * * ?", //1分鐘)
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.QueryChannelBalance{}),
+	//)
 	/**
 	 * 处里回调发生还款失败异及等待还款的提单，重新补还款机制(还款失败，代表回调成功，但还款在写入资料库时异常)
 	 * 备注：每3分钟处理一次还款

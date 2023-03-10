@@ -32,9 +32,12 @@ func (l *ProxyToChannel) Run() {
 	var orders []types.OrderX
 
 	logx.WithContext(l.ctx).Infof("执行时间：%s", time.Now().Format("2006-01-02 15:04:05"))
-
+	startTime := time.Now().Add(-time.Hour * 8).Add(-time.Second * 3600).Format("2006-01-02 15:04:05")
+	endTime := time.Now().Add(-time.Hour * 8).Add(-time.Second * 30).Format("2006-01-02 15:04:05")
+	logx.WithContext(l.ctx).Infof("捞取StartTime时间：%s ，EndTime时间:%s", startTime, endTime)
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).
-		Where("TIMEDIFF(CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE,480,DATE_FORMAT(created_at,'%Y-%m-%d %T'))) < 300").
+		Where("created_at > ? ", startTime).
+		Where("created_at < ? ", endTime).
 		Find(&orders).Error; err != nil {
 		logx.WithContext(l.ctx).Info("Err: %s", err.Error())
 	}
