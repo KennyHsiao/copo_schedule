@@ -4,7 +4,7 @@ RUN apk update --no-cache && apk add --no-cache ca-certificates tzdata
 ENV TZ Asia/Shanghai
 
 WORKDIR /app
-COPY bin/merchant /app/merchant
-COPY merchant/etc /app/etc
+COPY /schedule_service /app
+COPY etc/ /app/etc
 
-CMD ["./schedule_service", "-env" , "etc/.env"]
+CMD ["/app/schedule_service", "-env" , "etc/.env"]

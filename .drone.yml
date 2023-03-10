@@ -19,15 +19,14 @@ steps:
       script:
         - cd /root/copo_schedule
         - git checkout -- .
-        - git fetch
         - git checkout dev
-        - git checkout -- .
         - git pull origin dev
+        - git checkout -- .
         - go mod tidy
         - docker-compose down
         - docker rmi -f $(docker images --filter="reference=schedule_service" --quiet)
         - docker rmi -f $(docker images -qf "dangling=true")
-        - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -o bin/schedule_service main.go
+        - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -o schedule_service main.go
         - docker build -t schedule_service -f Dockerfile .
         - docker-compose up -d
     when:
