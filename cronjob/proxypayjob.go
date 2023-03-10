@@ -33,7 +33,7 @@ func (l *ProxyToChannel) Run() {
 
 	p := service.NewProxyPayEvent(l.ctx)
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).
-		Where("TIMEDIFF(CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE,480,DATE_FORMAT(created_at,'%Y-%m-%d %T'))) < 3600").
+		Where("TIMEDIFF(CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE,480,DATE_FORMAT(created_at,'%Y-%m-%d %T'))) < 300").
 		Find(&orders).Error; err != nil {
 		logx.WithContext(l.ctx).Info("Err", err.Error())
 	}
