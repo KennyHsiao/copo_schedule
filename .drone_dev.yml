@@ -5,8 +5,8 @@ clone:
   disable: true
 
 steps:
-  - name: docker-merchant
-    image: appleboy/drone-ssh
+  - name: docker-schedule_service
+    image: appleboy/drone-ssh:1.6.5-linux-amd64
     settings:
       host:
         from_secret: host
