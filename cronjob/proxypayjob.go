@@ -31,14 +31,15 @@ func NewProxyToChannel(ctx context.Context) ProxyToChannel {
 func (l *ProxyToChannel) Run() {
 	var orders []types.OrderX
 
+	logx.WithContext(l.ctx).Infof("执行时间：%s", time.Now().Format("2006-01-02 15:04:05"))
+
 	p := service.NewProxyPayEvent(l.ctx)
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).
 		Where("TIMEDIFF(CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE,480,DATE_FORMAT(created_at,'%Y-%m-%d %T'))) < 300").
 		Find(&orders).Error; err != nil {
 		logx.WithContext(l.ctx).Info("Err", err.Error())
 	}
-
-	logx.WithContext(l.ctx).Infof("执行时间：%s，待处理-[代付提单]，共 %d 笔", time.Now().Format("2006-01-02 15:04:05"), len(orders))
+	logx.WithContext(l.ctx).Infof("待处理-[代付提单]，共 %d 笔", len(orders))
 	if len(orders) > 0 {
 		logx.WithContext(l.ctx).Infof("已处理-[代付提单updateStatusByScheduleBOs]，共 %d 笔", len(orders))
 		//呼叫渠道送出(異部處理)
