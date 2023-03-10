@@ -37,7 +37,7 @@ func (l *ProxyToChannel) Run() {
 	if err := helper.COPO_DB.Table("tx_orders").Where("`type` = ? AND `status` = ? ", constants.ORDER_TYPE_DF, constants.WAIT_PROCESS).
 		Where("TIMEDIFF(CURRENT_TIMESTAMP(), TIMESTAMPADD(MINUTE,480,DATE_FORMAT(created_at,'%Y-%m-%d %T'))) < 300").
 		Find(&orders).Error; err != nil {
-		logx.WithContext(l.ctx).Info("Err", err.Error())
+		logx.WithContext(l.ctx).Info("Err: %s", err.Error())
 	}
 	logx.WithContext(l.ctx).Infof("待处理-[代付提单]，共 %d 笔", len(orders))
 	if len(orders) > 0 {
@@ -50,25 +50,25 @@ func (l *ProxyToChannel) Run() {
 			if order.ChannelOrderNo == "" && order.ChannelCallBackAt.IsZero() && order.TransAt.Time().IsZero() {
 				channel := types.ChannelData{}
 				if queryErr := helper.COPO_DB.Table("ch_channels").Where("code = ?", order.ChannelCode).Find(&channel); queryErr != nil {
-					logx.WithContext(l.ctx).Error("queryErr: ", queryErr)
+					logx.WithContext(l.ctx).Error("queryErr: \n", queryErr)
 				}
 
 				url := fmt.Sprintf("%s:%s/api/proxy-pay-query", viper.Get("CHANNEL_HOST"), channel.ChannelPort)
-				logx.WithContext(l.ctx).Infof("發送代付處理請求To渠道: %v。 url: %s", order, url)
+				logx.WithContext(l.ctx).Infof("發送代付處理請求To渠道: %+v。 url: %s\n", order, url)
 
 				//異步調用-呼叫異步調用服務
 				resp := &vo.ProxyQueryRespVO{}
 				var err error
 				go func() {
 					if resp, err = p.AsyncProxyQueryEvent(&l.ctx, url, &order, wg); err != nil {
-						logx.WithContext(l.ctx).Errorf("orderNo: %s ,resp: %s", order.OrderNo, err)
+						logx.WithContext(l.ctx).Errorf("orderNo: %s ,resp: %s\n", order.OrderNo, err)
 					}
-					logx.WithContext(l.ctx).Infof("resp:%+v", resp)
+					logx.WithContext(l.ctx).Infof("resp:%+v\n", resp)
 
 					if err != nil || resp.Code != "0" { ////回复失败，都列为失败单，不管是否为网路异常....等
 						//1. 处理渠道返回错误讯习
 						if resp != nil {
-							logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息: %s", order.OrderNo, resp.Message)
+							logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息: %s\n", order.OrderNo, resp.Message)
 							order.Status = constants.FAIL
 							order.RepaymentStatus = constants.REPAYMENT_WAIT
 							order.ErrorType = "1" //1.渠道返回错误	2.渠道异常	3.商户参数错误	4.账户为黑名单	5.其他
@@ -76,7 +76,7 @@ func (l *ProxyToChannel) Run() {
 						}
 
 						if err != nil {
-							logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息Err: %s", order.OrderNo, err.Error())
+							logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息Err: %s\n", order.OrderNo, err.Error())
 							order.Status = constants.FAIL
 							order.RepaymentStatus = constants.REPAYMENT_WAIT
 							order.ErrorType = "1" //1.渠道返回错误	2.渠道异常	3.商户参数错误	4.账户为黑名单	5.其他
@@ -89,7 +89,7 @@ func (l *ProxyToChannel) Run() {
 						//呼叫RPCc还款
 						balanceType, errBalance := merchantService.GetBalanceType(helper.COPO_DB, order.ChannelCode, order.Type)
 						if errBalance != nil {
-							logx.Errorf("BalanceType Err: %s", errBalance.Error())
+							logx.WithContext(l.ctx).Errorf("BalanceType Err: %s\n", errBalance.Error())
 						}
 						rpc := helper.TransactionRpc
 						if balanceType == "DFB" {
@@ -105,16 +105,16 @@ func (l *ProxyToChannel) Run() {
 						}
 
 						if errRpc != nil {
-							logx.WithContext(l.ctx).Errorf("代付提单 %s 还款失败。 Err: %s", order.OrderNo, errRpc.Error())
+							logx.WithContext(l.ctx).Errorf("代付提单 %s 还款失败。 Err: %s\n", order.OrderNo, errRpc.Error())
 							order.RepaymentStatus = constants.REPAYMENT_FAIL
 
 							// 更新订单
 							if errUpdate := helper.COPO_DB.Table("tx_orders").Updates(order).Error; errUpdate != nil {
-								logx.WithContext(l.ctx).Error("代付订单更新状态错误: ", errUpdate.Error())
+								logx.WithContext(l.ctx).Errorf("代付订单更新状态错误: %s\n", errUpdate.Error())
 							}
 
 						} else {
-							logx.WithContext(l.ctx).Infof("代付還款rpc完成，%s 錢包還款完成: %#v", balanceType, resRpc)
+							logx.WithContext(l.ctx).Infof("代付還款rpc完成，%s 錢包還款完成: %#v\n", balanceType, resRpc)
 							order.RepaymentStatus = constants.REPAYMENT_SUCCESS
 						}
 
@@ -126,7 +126,7 @@ func (l *ProxyToChannel) Run() {
 
 					// 更新订单
 					if errUpdate := helper.COPO_DB.Table("tx_orders").Updates(&order).Error; errUpdate != nil {
-						logx.WithContext(l.ctx).Error("代付订单更新状态错误: ", errUpdate.Error())
+						logx.WithContext(l.ctx).Error("代付订单更新状态错误: \n", errUpdate.Error())
 					}
 				}()
 			}

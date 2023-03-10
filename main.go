@@ -70,10 +70,10 @@ func main() {
 	 * 处里回调发生还款失败异及等待还款的提单，重新补还款机制(还款失败，代表回调成功，但还款在写入资料库时异常)
 	 * 备注：每3分钟处理一次还款
 	 */
-	//c.AddJob("0 0/3 * * * * ?", //3分鐘
-	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
-	//		Then(&cronjob.HandleRepayment{}),
-	//)
+	c.AddJob("0 0/3 * * * * ?", //3分鐘
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.HandleRepayment{}),
+	)
 
 	/**
 	代付交易中的单，2分钟没有回调则通知警讯
