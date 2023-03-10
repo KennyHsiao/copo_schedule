@@ -56,8 +56,8 @@ func main() {
 	//)
 
 	//90 秒抓取代付單[代處理]反查渠道
-	c.AddJob("0/90 * * * * * ?",
-		cron.NewChain().
+	c.AddJob("0 0/1 * * * * ?",
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.ProxyToChannel{}),
 	)
 
@@ -124,10 +124,10 @@ func main() {
 	)
 
 	// (搬移资料到备份表 Schedule) 每日5點開始執行 '
-	c.AddJob("0 0 5 * * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.BackupData{}),
-	)
+	//c.AddJob("0 0 5 * * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.BackupData{}),
+	//)
 	c.Start()
 
 	// prometheus
