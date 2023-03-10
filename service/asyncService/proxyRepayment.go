@@ -163,7 +163,7 @@ func AsyncProxyPayRepayment(url string, order *types.OrderX, wg *sync.WaitGroup)
 				order.RepaymentStatus = constants.REPAYMENT_FAIL
 				return errRpc
 			} else {
-				logx.WithContext(context).Infof("代付還款rpc完成，%s 錢包還款完成: %#v", balanceType, resRpc)
+				logx.WithContext(context).Infof("3代付還款rpc完成，%s 錢包還款完成: %#v", balanceType, resRpc)
 				order.RepaymentStatus = constants.REPAYMENT_SUCCESS
 				//TODO 收支紀錄
 			}

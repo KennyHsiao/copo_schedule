@@ -109,7 +109,7 @@ func (l *ProxyPayEvent) internal_AsyncProxyPayEvent(url string, order *types.Ord
 			respOrder.RepaymentStatus = constants.REPAYMENT_FAIL
 			return nil, errorz.New(errors.FAIL, errRpc.Error())
 		} else {
-			logx.WithContext(context).Infof("代付還款rpc完成，%s 錢包還款完成: %#v", order.BalanceType, resRpc)
+			logx.WithContext(context).Infof("1代付還款rpc完成，%s 錢包還款完成: %#v", order.BalanceType, resRpc)
 			respOrder.RepaymentStatus = constants.REPAYMENT_SUCCESS
 		}
 	} else {

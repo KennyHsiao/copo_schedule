@@ -114,7 +114,7 @@ func (l *ProxyToChannel) Run() {
 							}
 
 						} else {
-							logx.WithContext(l.ctx).Infof("代付還款rpc完成，%s 錢包還款完成: %#v\n", balanceType, resRpc)
+							logx.WithContext(l.ctx).Infof("2代付還款rpc完成，%s 錢包還款完成: %#v\n", balanceType, resRpc)
 							order.RepaymentStatus = constants.REPAYMENT_SUCCESS
 						}
 
