@@ -63,16 +63,23 @@ func (l *ProxyToChannel) Run() {
 					if resp, err = p.AsyncProxyQueryEvent(&l.ctx, url, &order, wg); err != nil {
 						logx.WithContext(l.ctx).Errorf("orderNo: %s ,resp: %s", order.OrderNo, err)
 					}
-					logx.WithContext(l.ctx).Infof("resp:%#v", resp)
+					logx.WithContext(l.ctx).Infof("resp:%+v", resp)
 
 					if err != nil || resp.Code != "0" { ////回复失败，都列为失败单，不管是否为网路异常....等
 						//1. 处理渠道返回错误讯习
-						logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息: %s", order.OrderNo, resp.Message)
-						order.Status = constants.FAIL
-						order.RepaymentStatus = constants.REPAYMENT_WAIT
-						order.ErrorType = "1" //1.渠道返回错误	2.渠道异常	3.商户参数错误	4.账户为黑名单	5.其他
-						order.ErrorNote = "Code:" + resp.Code + " Message: " + resp.Message
+						if resp != nil {
+							logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息: %s", order.OrderNo, resp.Message)
+							order.Status = constants.FAIL
+							order.RepaymentStatus = constants.REPAYMENT_WAIT
+							order.ErrorType = "1" //1.渠道返回错误	2.渠道异常	3.商户参数错误	4.账户为黑名单	5.其他
+							order.ErrorNote = "Code:" + resp.Code + " Message: " + resp.Message
+						}
+
 						if err != nil {
+							logx.WithContext(l.ctx).Errorf("代付提单: %s ，渠道交易失败讯息Err: %s", order.OrderNo, err.Error())
+							order.Status = constants.FAIL
+							order.RepaymentStatus = constants.REPAYMENT_WAIT
+							order.ErrorType = "1" //1.渠道返回错误	2.渠道异常	3.商户参数错误	4.账户为黑名单	5.其他
 							order.ErrorNote += " Err: " + err.Error()
 						}
 
