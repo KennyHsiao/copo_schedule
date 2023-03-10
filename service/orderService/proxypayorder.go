@@ -10,7 +10,6 @@ import (
 	"github.com/copo888/copo_schedule/common/types"
 	"github.com/copo888/copo_schedule/common/utils"
 	"github.com/copo888/transaction_service/common/errorz"
-
 	//"github.com/copo888/transaction_service/common/errorz"
 	"github.com/copo888/transaction_service/common/response"
 	"github.com/gioco-play/gozzle"
@@ -98,7 +97,6 @@ func CallChannel_ProxyQuery(context *context.Context, url string, order *types.O
 	}
 	logx.WithContext(*context).Infof("EncryptKey: %s，ProxyKey:%s ，PublicKey:%s ", ProxyKey, viper.GetString("PROXY_KEY"), viper.GetString("PUBLIC_KEY"))
 	chnResp, chnErr := gozzle.Post(url).Timeout(10).Trace(span).Header("authenticationProxykey", ProxyKey).JSON(proxyQuery)
-	//res, err2 := http.Post(url,"application/json",bytes.NewBuffer(body))
 	if chnResp != nil {
 		logx.WithContext(*context).Info("errors Status:", chnResp.Status())
 		logx.WithContext(*context).Info("errors Body:", string(chnResp.Body()))
@@ -126,7 +124,6 @@ func CallChannel_ProxyQuery(context *context.Context, url string, order *types.O
 	logx.WithContext(*context).Infof("proxyPayRespVO : %#v", proxyPayRespVO)
 	return proxyPayRespVO, nil
 
-	return nil, nil
 }
 
 /*

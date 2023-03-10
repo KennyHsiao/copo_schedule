@@ -29,6 +29,12 @@ func NewProxyPayEvent(ctx context.Context) ProxyPayEvent {
 	}
 }
 
+func (l *ProxyPayEvent) AsyncProxyQueryEvent(context *context.Context, url string, order *types.OrderX, wg *sync.WaitGroup) (respVO *vo.ProxyQueryRespVO, err error) {
+	defer wg.Done()
+	respVO, err = orderService.CallChannel_ProxyQuery(context, url, order)
+	return respVO, err
+}
+
 func (l *ProxyPayEvent) AsyncProxyPayEvent(url string, order *types.OrderX, wg *sync.WaitGroup) (respVO *vo.ProxyPayRespVO, err error) {
 	redisKey := fmt.Sprintf("%s-%s", order.MerchantCode, order.OrderNo)
 	redisLock := redislock.New(helper.REDIS, redisKey, "proxy-call-back:")

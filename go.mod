@@ -16,7 +16,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/jinzhu/copier v0.3.5
 	github.com/neccoys/go-zero-extension v0.0.0-20220411035408-307c413921de
 	github.com/shopspring/decimal v1.3.1
 	github.com/zeromicro/go-zero v1.3.2

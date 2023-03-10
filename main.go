@@ -55,11 +55,11 @@ func main() {
 	//		Then(&cronjob.TestJob{}),
 	//)
 
-	//90 秒抓取代付單[代處理]重送渠道
-	//c.AddJob("*/90 * * * * ?",
-	//	cron.NewChain().
-	//		Then(&cronjob.ProxyToChannel{}),
-	//)
+	//90 秒抓取代付單[代處理]反查渠道
+	c.AddJob("*/90 * * * * ?",
+		cron.NewChain().
+			Then(&cronjob.ProxyToChannel{}),
+	)
 
 	//1分鐘查餘額
 	c.AddJob("0 0/1 * * * * ?", //1分鐘)
