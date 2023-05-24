@@ -19,3 +19,13 @@ func CallTelegramNotify(ctx context.Context, msg *types.TelegramNotifyRequest) e
 
 	return nil
 }
+
+func CallNoticeUrlForBalance(ctx context.Context, msg *types.TelegramNotifyRequest) error {
+	url := fmt.Sprintf("%s:20003/telegram/notify_balance", viper.GetString("SERVER"))
+	span := trace.SpanFromContext(ctx)
+	if _, err := gozzle.Post(url).Timeout(25).Trace(span).JSON(msg); err != nil {
+		logx.WithContext(ctx).Errorf("馀额报警通知失敗:%s", err.Error())
+	}
+
+	return nil
+}

@@ -123,6 +123,12 @@ func main() {
 			Then(&cronjob.ChannelBalanceRecord{}),
 	)
 
+	// (检查商户子钱包馀额Schedule) 整點開始每10分鐘執行 '
+	c.AddJob("0 0/10 * * * ?",
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.MerchantBalancesCheck{}),
+	)
+
 	// (搬移资料到备份表 Schedule) 每日5點開始執行 '
 	//c.AddJob("0 0 5 * * ?",
 	//	cron.NewChain(cron.SkipIfStillRunning(logger)).

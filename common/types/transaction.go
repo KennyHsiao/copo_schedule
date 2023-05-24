@@ -2496,3 +2496,12 @@ type SystemParams struct {
 type TelegramNotifyRequest struct {
 	Message string `json:"message"`
 }
+
+type MerchantPtBalance struct {
+	ID           int64   `json:"id, optional"`
+	MerchantCode string  `json:"merchantCode, optional"`
+	CurrencyCode string  `json:"currencyCode, optional"`
+	Name         string  `json:"name, optional"`
+	Balance      float64 `json:"balance, optional"`
+	Remark       string  `json:"remark, optional"`
+}
