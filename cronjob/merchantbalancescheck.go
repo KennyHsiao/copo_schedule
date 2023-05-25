@@ -15,6 +15,7 @@ type MerchantBalancesCheck struct {
 }
 
 func (l *MerchantBalancesCheck) Run() {
+	logx.WithContext(l.ctx).Infof("開始檢查商戶子錢包")
 	var merchantDfbBalance types.MerchantBalance
 	var merchantXfbBalance types.MerchantBalance
 	var merchantPtBalances []types.MerchantPtBalance
@@ -76,9 +77,11 @@ func (l *MerchantBalancesCheck) Run() {
 			}
 		}
 		if len(msg) > 0 {
+			logx.WithContext(l.ctx).Infof("通知商戶子錢包有誤，Msg :", msg)
 			telegramNotify.CallNoticeUrlForBalance(l.ctx, &types.TelegramNotifyRequest{
 				Message: msg,
 			})
 		}
 	}
+	logx.WithContext(l.ctx).Infof("檢查商戶子錢包結束")
 }
