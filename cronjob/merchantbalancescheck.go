@@ -7,6 +7,7 @@ import (
 	"github.com/copo888/copo_schedule/helper"
 	telegramNotify "github.com/copo888/copo_schedule/service"
 	"github.com/zeromicro/go-zero/core/logx"
+	"strings"
 )
 
 type MerchantBalancesCheck struct {
@@ -76,7 +77,7 @@ func (l *MerchantBalancesCheck) Run() {
 				}
 			}
 		}
-		if len(msg) > 0 {
+		if strings.Contains(msg, "子钱包余额功能异常\n\n商户号：") {
 			logx.WithContext(l.ctx).Infof("通知商戶子錢包有誤，Msg :", msg)
 			telegramNotify.CallNoticeUrlForBalance(l.ctx, &types.TelegramNotifyRequest{
 				Message: msg,
