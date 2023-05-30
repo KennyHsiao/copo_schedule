@@ -17,8 +17,6 @@ type MerchantBalancesCheck struct {
 
 func (l *MerchantBalancesCheck) Run() {
 	logx.WithContext(l.ctx).Infof("開始檢查商戶子錢包")
-	var merchantDfbBalance types.MerchantBalance
-	var merchantXfbBalance types.MerchantBalance
 	var merchantPtBalances []types.MerchantPtBalance
 	var merchantCurrencies []types.MerchantCurrency
 
@@ -34,9 +32,10 @@ func (l *MerchantBalancesCheck) Run() {
 		merchantMap := make(map[string]string)
 
 		for _, currency := range merchantCurrencies {
+			var merchantDfbBalance types.MerchantBalance
+			var merchantXfbBalance types.MerchantBalance
 			merchantCode := currency.MerchantCode
 			currencyCode := currency.CurrencyCode
-
 
 			if err := helper.COPO_DB.Table("mc_merchant_balances").
 				Where("merchant_code = ?", merchantCode).
