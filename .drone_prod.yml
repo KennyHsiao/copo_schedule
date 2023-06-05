@@ -32,4 +32,4 @@ steps:
       - docker-compose up -d
   when:
     ref:
-      - refs/tags/api-sch*
+      - refs/tags/api-sch-*
