@@ -1,0 +1,35 @@
+---
+kind: pipeline
+type: docker
+name: schedule-deploy
+
+clone:
+  disable: true
+
+steps:
+- name: docker-schedule
+  image: appleboy/drone-ssh
+  settings:
+    host:
+      from_secret: api01-host
+    username: 
+      from_secret: api01-user
+    password:
+      from_secret: api01-pwd
+    port:
+      from_secret: api01-port
+    command_timeout: 180m
+    script:
+      - cd /root/copo_schedule
+      - git checkout -- .
+      - git pull origin master
+      - go mod tidy
+      - docker-compose down
+      - docker rmi schedule_service:latest
+      - docker image prune -f
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags='-s -w' -o schedule_service main.go
+      - DOCKER_BUILDKIT=1 docker build -t schedule_service .
+      - docker-compose up -d
+  when:
+    ref:
+      - refs/tags/api-sch-*
