@@ -94,8 +94,8 @@ func main() {
 	//)
 
 	//每小时10分 结算商户报表
-	c.AddJob("*/5 * * * * ?", //每5秒
-		//c.AddJob("0 10 * * * ?", //每小时10分
+	//c.AddJob("*/5 * * * * ?", //每5秒
+	c.AddJob("0 10 * * * ?", //每小时10分
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.MerhchantReport{}),
 	)
