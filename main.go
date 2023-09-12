@@ -56,10 +56,10 @@ func main() {
 	//)
 
 	//90 秒抓取代付單[代處理]反查渠道
-	c.AddJob("0 0/1 * * * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.ProxyToChannel{}),
-	)
+	//c.AddJob("0 0/1 * * * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.ProxyToChannel{}),
+	//)
 
 	//1分鐘查餘額
 	//c.AddJob("0 0/1 * * * * ?", //1分鐘)
@@ -95,46 +95,47 @@ func main() {
 
 	//每小时10分 结算商户报表
 	//c.AddJob("*/5 * * * * ?", //每5秒
-	c.AddJob("0 0/10 * * * ?", //每小时10分
+	//c.AddJob("0 0/10 * * * ?", //每小时10分
+	c.AddJob("0 35 * * * ?", //每小时10分
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.MerhchantReport{}),
 	)
 
 	// (補算傭金利潤Schedule) 整點開始每5分鐘執行
-	c.AddJob("0 0/5 * * * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.CalculateProfit{}),
-	)
-
-	// (計算月傭金報表Schedule) 每月2號 03:00:00執行
-	c.AddJob("0 0 3 2 * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.CommissionMonthReport{}),
-	)
-
-	// (計算月收益報表Schedule) 每月5號 03:00:00執行 '
-	c.AddJob("0 0 3 5 * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.MonthProfitReport{}),
-	)
-
-	// (查询渠道馀额Schedule) 整點開始每5分鐘執行 '
-	c.AddJob("0 0/5 * * * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.ChannelBalance{}),
-	)
-
-	// (查询渠道馀额紀錄 Schedule) 整點開始執行 '
-	c.AddJob("0 0 * * * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.ChannelBalanceRecord{}),
-	)
-
-	// (检查商户子钱包馀额Schedule) 整點開始每10分鐘執行 '
-	c.AddJob("0 0/10 * * * ?",
-		cron.NewChain(cron.SkipIfStillRunning(logger)).
-			Then(&cronjob.MerchantBalancesCheck{}),
-	)
+	//c.AddJob("0 0/5 * * * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.CalculateProfit{}),
+	//)
+	//
+	//// (計算月傭金報表Schedule) 每月2號 03:00:00執行
+	//c.AddJob("0 0 3 2 * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.CommissionMonthReport{}),
+	//)
+	//
+	//// (計算月收益報表Schedule) 每月5號 03:00:00執行 '
+	//c.AddJob("0 0 3 5 * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.MonthProfitReport{}),
+	//)
+	//
+	//// (查询渠道馀额Schedule) 整點開始每5分鐘執行 '
+	//c.AddJob("0 0/5 * * * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.ChannelBalance{}),
+	//)
+	//
+	//// (查询渠道馀额紀錄 Schedule) 整點開始執行 '
+	//c.AddJob("0 0 * * * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.ChannelBalanceRecord{}),
+	//)
+	//
+	//// (检查商户子钱包馀额Schedule) 整點開始每10分鐘執行 '
+	//c.AddJob("0 0/10 * * * ?",
+	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
+	//		Then(&cronjob.MerchantBalancesCheck{}),
+	//)
 
 	// (搬移资料到备份表 Schedule) 每日5點開始執行 '
 	//c.AddJob("0 0 5 * * ?",
