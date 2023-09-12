@@ -55,7 +55,7 @@ func main() {
 	//		Then(&cronjob.TestJob{}),
 	//)
 
-	//90 秒抓取代付單[代處理]反查渠道
+	//90秒抓取代付單[代處理]反查渠道
 	c.AddJob("0 0/1 * * * ?",
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
 			Then(&cronjob.ProxyToChannel{}),
