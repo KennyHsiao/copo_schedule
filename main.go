@@ -93,6 +93,13 @@ func main() {
 	//		Then(&cronjob.QueryTransaction{}),
 	//)
 
+	//每小时10分 结算商户报表
+	//c.AddJob("*/5 * * * * ?", //每5秒
+	c.AddJob("0 0/10 * * * ?", //每小时10分
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.MerhchantReport{}),
+	)
+
 	// (補算傭金利潤Schedule) 整點開始每5分鐘執行
 	c.AddJob("0 0/5 * * * ?",
 		cron.NewChain(cron.SkipIfStillRunning(logger)).

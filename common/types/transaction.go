@@ -25,6 +25,10 @@ func (MerchantBalance) TableName() string {
 	return "mc_merchant_balances"
 }
 
+func (MerchantReport) TableName() string {
+	return "rp_merchant_report"
+}
+
 func (o MerchantContact) Value() (driver.Value, error) {
 	b, err := json.Marshal(o)
 	return string(b), err
@@ -2504,4 +2508,59 @@ type MerchantPtBalance struct {
 	Name         string  `json:"name, optional"`
 	Balance      float64 `json:"balance, optional"`
 	Remark       string  `json:"remark, optional"`
+}
+
+type MerchantReportQueryRequest struct {
+	MerchantCode    string `json:"merchantCode,optional"`
+	ChannelCode     string `json:"channelCode,optional"`
+	ChannelName     string `json:"channelName,optional"`
+	StartAt         string `json:"startAt,optional"`
+	EndAt           string `json:"endAt,optional"`
+	TransactionType string `json:"transactionType,optional"` //全部/內充/代付/支付/下發
+	CurrencyCode    string `json:"currencyCode"`
+	GroupType       string `json:"groupType,optional"`
+	IsProxySearch   string `json:"isProxySearch,optional"`
+	PageNum         int    `json:"pageNum,optional" gorm:"-"` //gorm:"-" 忽略這參數檢查是否有給
+	PageSize        int    `json:"pageSize,optional" gorm:"-"`
+}
+
+type MerchantReportQueryResponse struct {
+	List                 []MerchantReport `json:"list" gorm:"-"`
+	TotalOrderAmount     float64          `json:"totalOrderAmount"`
+	TotalOrderQuantity   float64          `json:"totalOrderQuantity"`
+	TotalSuccessAmount   float64          `json:"totalSuccessAmount"`
+	TotalSuccessQuantity float64          `json:"totalSuccessQuantity"`
+	TotalCost            float64          `json:"totalCost"`
+	TotalProfit          float64          `json:"totalProfit"`
+	PageNum              int              `json:"pageNum" gorm:"-"`
+	PageSize             int              `json:"pageSize" gorm:"-"`
+	RowCount             int64            `json:"rowCount" gorm:"-"`
+}
+
+type MerchantReport struct {
+	ID                  int64   `json:"id, optional"`
+	AgentLayerCode      string  `json:"agentLayerCode, optional"`
+	MerchantCode        string  `json:"merchantCode, optional"`
+	ChannelCode         string  `json:"channelCode, optional"`
+	ChannelName         string  `json:"channelName, optional"`
+	TransactionType     string  `json:"transactionType, optional"`
+	PayTypeName         string  `json:"payTypeName, optional"`
+	OrderAmount         float64 `json:"orderAmount, optional"`
+	OrderQuantity       float64 `json:"orderQuantity, optional"`
+	SuccessAmount       float64 `json:"successAmount, optional"`
+	SuccessQuantity     float64 `json:"successQuantity, optional"`
+	SuccessRate         float64 `json:"successRate, optional" gorm:"-"`
+	MerchantFee         float64 `json:"merchantFee, optional"`         //商戶費率
+	MerchantHandlingFee float64 `json:"merchantHandlingFee, optional"` //商戶手續費
+	ChannelFee          float64 `json:"channelFee, optional"`          //渠道費率
+	ChannelHandlingFee  float64 `json:"channelHandlingFee, optional"`  //渠道手續費
+	SystemCost          float64 `json:"systemCost, optional"`
+	SystemProfit        float64 `json:"systemProfit, optional"`
+	CurrencyCode        string  `json:"currencyCode, optional"`
+	SettlementDate      string  `json:"settlementDate, optional"`
+}
+
+type MerchantReportCreate struct {
+	MerchantReport
+	CreatedAt string `json:"createdAt"`
 }
