@@ -45,19 +45,21 @@ func (l *MerhchantReport) Run() {
 	}, l.ctx); err != nil {
 		logx.WithContext(l.ctx).Errorf("商户报表结算错误:%s", err.Error())
 	}
-	var merchantReportCreates []types.MerchantReportCreate
+	if len(resp.List) > 0 {
+		var merchantReportCreates []types.MerchantReportCreate
 
-	for _, merReport := range resp.List {
-		merReport.SettlementDate = groupByStart[:10]
-		merchantReport := types.MerchantReportCreate{
-			MerchantReport: merReport,
-			CreatedAt:      time.Now().UTC().Format("2006-01-02 15:04:05"),
+		for _, merReport := range resp.List {
+			merReport.SettlementDate = groupByStart[:10]
+			merchantReport := types.MerchantReportCreate{
+				MerchantReport: merReport,
+				CreatedAt:      time.Now().UTC().Format("2006-01-02 15:04:05"),
+			}
+			merchantReportCreates = append(merchantReportCreates, merchantReport)
 		}
-		merchantReportCreates = append(merchantReportCreates, merchantReport)
-	}
 
-	if err := helper.COPO_DB.Table("rp_merchant_report").CreateInBatches(merchantReportCreates, len(merchantReportCreates)).Error; err != nil {
-		logx.WithContext(l.ctx).Errorf("商户报表新增结算错误:%s", err.Error())
+		if err := helper.COPO_DB.Table("rp_merchant_report").CreateInBatches(merchantReportCreates, len(merchantReportCreates)).Error; err != nil {
+			logx.WithContext(l.ctx).Errorf("商户报表新增结算错误:%s", err.Error())
+		}
 	}
 
 }
