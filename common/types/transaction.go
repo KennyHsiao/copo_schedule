@@ -2558,6 +2558,7 @@ type MerchantReport struct {
 	SystemProfit        float64 `json:"systemProfit, optional"`
 	CurrencyCode        string  `json:"currencyCode, optional"`
 	SettlementDate      string  `json:"settlementDate, optional"`
+	SettlementTime      string  `json:"settlementTime, optional"`
 }
 
 type MerchantReportCreate struct {
