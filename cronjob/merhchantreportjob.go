@@ -26,14 +26,15 @@ func (l *MerhchantReport) Run() {
 
 	startAt := time.Now().UTC().Add(-1 * time.Hour)
 	endAt := time.Now().UTC()
-	//startAt := time.Now().UTC().Add(-4 * time.Hour)
-	//endAt := time.Now().UTC().Add(-3 * time.Hour)
+	//startAt := time.Now().UTC().Add(-4 * time.Hour)// 正式要用
+	//endAt := time.Now().UTC().Add(-3 * time.Hour) // 正式要用
 	groupByStart := startAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05")[:13] + ":00:00"
 	groupByEnd := endAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05")[:13] + ":00:00"
 	logx.WithContext(l.ctx).Infof("商户报表排程开始: %s", time.Now().Format("2006-01-02 15:04:05"))
-	logx.WithContext(l.ctx).Infof("商户报表结算开始，开始时间: %s,结速时间: %s", startAt.Format("2006-01-02 15:04:05")[:13]+":00:00", endAt.Format("2006-01-02 15:04:05")[:13]+":00:00")
-	println("商户报表结算开始，开始时间: " + startAt.Format("2006-01-02 15:04:05")[:13] + ":00:00" + " 结速时间: " + endAt.Format("2006-01-02 15:04:05")[:13] + ":00:00")
-	println("商户报表groupBy，开始时间: " + groupByStart + " 结速时间: " + groupByEnd)
+	logx.WithContext(l.ctx).Infof("商户报表结算开始，开始时间: %s,结速时间: %s", groupByStart, groupByEnd)
+
+	println("商户报表排程开始，开始时间(1小前): " + groupByStart + " 结速时间: " + groupByEnd)
+	println("商户报表结算开始，开始时间(整点+0): " + startAt.Format("2006-01-02 15:04:05")[:13] + ":00:00" + " 结速时间(整点+0): " + endAt.Format("2006-01-02 15:04:05")[:13] + ":00:00")
 	resp := &types.MerchantReportQueryResponse{}
 	var err error
 	if resp, err = reportService.InterMerchantReport(helper.COPO_DB, &types.MerchantReportQueryRequest{
