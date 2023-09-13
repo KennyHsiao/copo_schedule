@@ -23,8 +23,11 @@ func (l *MerhchantReport) Run() {
 	//ex2: 当下时间yyyy-MM-dd 19:05:00(+0) -> yyyy-MM-dd 15:00:00(+0) ~ yyyy-MM-dd 16:00:00(+0) = yyyy-MM-dd 23:00:00(+8) ~ yyyy-MM-dd 24:00:00(+8)
 	//ex3: 当下时间yyyy-MM-dd 20:05:00(+0) -> yyyy-MM-dd 16:00:00(+0) ~ yyyy-MM-dd 17:00:00(+0) = yyyy-MM-dd+1 00:00:00(+8) ~ yyyy-MM-dd+1 01:00:00(+8)
 	//                                               startAt                  endAt               groupByStart                groupByEnd
-	startAt := time.Now().UTC().Add(-4 * time.Hour)
-	endAt := time.Now().UTC().Add(-3 * time.Hour)
+
+	startAt := time.Now().UTC().Add(-1 * time.Hour)
+	endAt := time.Now().UTC()
+	//startAt := time.Now().UTC().Add(-4 * time.Hour)
+	//endAt := time.Now().UTC().Add(-3 * time.Hour)
 	groupByStart := startAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05")[:13] + ":00:00"
 	groupByEnd := endAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05")[:13] + ":00:00"
 	logx.WithContext(l.ctx).Infof("商户报表排程开始: %s", time.Now().Format("2006-01-02 15:04:05"))
