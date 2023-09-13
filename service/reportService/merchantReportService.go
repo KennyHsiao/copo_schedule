@@ -14,7 +14,7 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 
 	resp = &types.MerchantReportQueryResponse{}
 	//var terms []string
-	var count int64
+	//var count int64
 	var reportList []types.MerchantReport
 
 	//代理商戶查詢
@@ -82,12 +82,12 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 		"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN oc.handling_fee ELSE ofp.transfer_handling_fee END ELSE 0 END) AS system_cost," + //系統成本 ps.下發單看(tx_order_channels.handling_fee) 其他單看(tx_orders_fee_profit.transfer_handling_fee)
 		"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN ofp.profit_amount/cc.channel_count ELSE ofp.profit_amount END ELSE 0 END) AS system_profit " //系統利潤 ps.(下發要除該訂單的渠道數量)
 
-	selectTotal := "SUM(tx.order_amount) AS total_order_amount," + //訂單總額
-		"COUNT(*) AS total_order_quantity," + //訂單數量
-		"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN oc.order_amount ELSE IF(tx.actual_amount != 0 ,tx.actual_amount,tx.order_amount) END ELSE 0 END) AS total_success_amount," + //成功總額
-		"SUM(CASE WHEN tx.`status` = '20' THEN 1 ELSE 0 END) AS total_success_quantity," + //成功數量
-		"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN oc.handling_fee ELSE ofp.transfer_handling_fee END ELSE 0 END) AS total_cost," +
-		"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN ofp.profit_amount/cc.channel_count ELSE ofp.profit_amount END ELSE 0 END) AS total_profit "
+	//selectTotal := "SUM(tx.order_amount) AS total_order_amount," + //訂單總額
+	//	"COUNT(*) AS total_order_quantity," + //訂單數量
+	//	"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN oc.order_amount ELSE IF(tx.actual_amount != 0 ,tx.actual_amount,tx.order_amount) END ELSE 0 END) AS total_success_amount," + //成功總額
+	//	"SUM(CASE WHEN tx.`status` = '20' THEN 1 ELSE 0 END) AS total_success_quantity," + //成功數量
+	//	"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN oc.handling_fee ELSE ofp.transfer_handling_fee END ELSE 0 END) AS total_cost," +
+	//	"SUM(CASE WHEN tx.`status` = '20' THEN CASE WHEN tx.type = 'XF' THEN ofp.profit_amount/cc.channel_count ELSE ofp.profit_amount END ELSE 0 END) AS total_profit "
 
 	//termWhere := strings.Join(terms, " AND ")
 
@@ -110,17 +110,17 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 		groupX = "tx.type, tx.merchant_code"
 	}
 
-	if err = tx.Select(selectTotal).Find(resp).Error; err != nil {
-		return nil, errorz.New(response.DATABASE_FAILURE, err.Error())
-	}
+	//if err = tx.Select(selectTotal).Find(resp).Error; err != nil {
+	//	return nil, errorz.New(response.DATABASE_FAILURE, err.Error())
+	//}
 
 	if ctx != nil {
 		tx = tx.WithContext(ctx)
 	}
 
-	if err = tx.Group(groupX).Count(&count).Error; err != nil {
-		return nil, errorz.New(response.DATABASE_FAILURE, err.Error())
-	}
+	//if err = tx.Group(groupX).Count(&count).Error; err != nil {
+	//	return nil, errorz.New(response.DATABASE_FAILURE, err.Error())
+	//}
 
 	if err = tx.Select(selectX).Group(groupX).
 		Find(&reportList).Error; err != nil {
