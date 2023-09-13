@@ -27,7 +27,8 @@ func (l *MerhchantReport) Run() {
 	endAt := time.Now().UTC().Add(-3 * time.Hour)
 	groupByStart := startAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05")[:13] + ":00:00"
 	groupByEnd := endAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05")[:13] + ":00:00"
-	logx.WithContext(l.ctx).Infof("商户报表结算开始，开始时间: %s,结速时间: %s", startAt.Format("2006-01-02 15:04:05")[:13], endAt.Format("2006-01-02 15:04:05")[:13])
+	logx.WithContext(l.ctx).Infof("商户报表排程开始: %s", time.Now().Format("2006-01-02 15:04:05"))
+	logx.WithContext(l.ctx).Infof("商户报表结算开始，开始时间: %s,结速时间: %s", startAt.Format("2006-01-02 15:04:05")[:13]+":00:00", endAt.Format("2006-01-02 15:04:05")[:13]+":00:00")
 	println("商户报表结算开始，开始时间: " + startAt.Format("2006-01-02 15:04:05")[:13] + ":00:00" + " 结速时间: " + endAt.Format("2006-01-02 15:04:05")[:13] + ":00:00")
 	println("商户报表groupBy，开始时间: " + groupByStart + " 结速时间: " + groupByEnd)
 	resp := &types.MerchantReportQueryResponse{}
