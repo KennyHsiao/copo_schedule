@@ -55,7 +55,7 @@ func (l *MerhchantReport) Run() {
 
 		for _, merReport := range resp.List {
 			merReport.SettlementDate = groupByStart[:10]
-			merReport.SettlementTime = groupByStart[11:13] + ":00:00"
+			merReport.SettlementTime = groupByStart
 			merchantReport := types.MerchantReportCreate{
 				MerchantReport: merReport,
 				CreatedAt:      time.Now().UTC().Format("2006-01-02 15:04:05"),
