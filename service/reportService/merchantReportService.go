@@ -13,7 +13,7 @@ import (
 func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx context.Context) (resp *types.MerchantReportQueryResponse, err error) {
 
 	resp = &types.MerchantReportQueryResponse{}
-	//var terms []string
+	//var terms []string TEST
 	//var count int64
 	var reportList []types.MerchantReport
 
