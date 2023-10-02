@@ -13,7 +13,7 @@ import (
 func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx context.Context) (resp *types.MerchantReportQueryResponse, err error) {
 
 	resp = &types.MerchantReportQueryResponse{}
-	//var terms []string TEST
+	//var terms []string
 	//var count int64
 	var reportList []types.MerchantReport
 
@@ -64,7 +64,8 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 	db = db.Where("tx.`created_at` < ?", req.EndAt)
 	db = db.Where("(ch.code is not null or chxf.code is not null )")
 	db = db.Where("tx.is_test != '1'")
-	selectX := "tx.`merchant_code` AS merchant_code," +
+	selectX := "DATE_ADD(DATE_FORMAT(tx.created_at, '%Y-%m-%d %H:00:00') ,INTERVAL 8 HOUR) AS settlement_time," +
+		"tx.`merchant_code` AS merchant_code," +
 		"CASE WHEN tx.type = 'XF' THEN chxf.`code` ELSE ch.`code` END AS channel_code, " + // 下發的渠道不同表
 		"CASE WHEN tx.type = 'XF' THEN chxf.`name` ELSE ch.`name` END AS channel_name, " + // 下發的渠道不同表
 		"tx.`type`            AS transaction_type," +
@@ -102,7 +103,8 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 		Joins("LEFT JOIN ch_channels chxf ON oc.channel_code = chxf.`code` "). // 下發用的渠道
 		Joins("LEFT JOIN ( SELECT order_no, count(*) AS channel_count FROM tx_order_channels GROUP BY order_no ) cc ON cc.order_no = tx.order_no ")
 
-	groupX := "tx.type, ch.code, chxf.code, pt.code, tx.merchant_code"
+	groupX := "tx.type, ch.code, chxf.code, pt.code, tx.merchant_code, settlement_time"
+	orderX := "settlement_time ASC,currency_code ASC,merchant_code ASC,transaction_type DESC"
 
 	if req.GroupType == "merchantCode" {
 		groupX = "tx.merchant_code"
@@ -122,7 +124,7 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 	//	return nil, errorz.New(response.DATABASE_FAILURE, err.Error())
 	//}
 
-	if err = tx.Select(selectX).Group(groupX).
+	if err = tx.Select(selectX).Group(groupX).Order(orderX).
 		Find(&reportList).Error; err != nil {
 		return nil, errorz.New(response.DATABASE_FAILURE, err.Error())
 	}
