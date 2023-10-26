@@ -72,7 +72,7 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 		"tx.currency_code     AS currency_code," +
 		"pt.`name`            AS pay_type_name," +
 		"mcr.fee              AS merchant_fee," +
-		"CASE WHEN tx.`type` = 'XF' AND mcr.handling_fee = 0 OR mcr.handling_fee IS NULL THEN bsr.withdraw_handling_fee ELSE mcr.handling_fee END AS merchant_handling_fee," +
+		"CASE WHEN tx.`type` = 'XF' AND (mcr.handling_fee = 0 OR mcr.handling_fee IS NULL) THEN bsr.withdraw_handling_fee ELSE mcr.handling_fee END AS merchant_handling_fee," +
 		"cpt.fee              AS channel_fee," +
 		"cpt.handling_fee     AS channel_handling_fee," +
 		"SUM(tx.order_amount) AS order_amount," + //訂單總額
@@ -101,7 +101,8 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 		Joins("LEFT JOIN ch_channels ch ON tx.channel_code = ch.`code` ").
 		Joins("LEFT JOIN tx_order_channels oc ON tx.order_no = oc.order_no "). // 下發用的渠道
 		Joins("LEFT JOIN ch_channels chxf ON oc.channel_code = chxf.`code` "). // 下發用的渠道
-		Joins("LEFT JOIN ( SELECT order_no, count(*) AS channel_count FROM tx_order_channels GROUP BY order_no ) cc ON cc.order_no = tx.order_no ")
+		Joins("LEFT JOIN ( SELECT order_no, count(*) AS channel_count FROM tx_order_channels GROUP BY order_no ) cc ON cc.order_no = tx.order_no ").
+		Joins("LEFT JOIN bs_system_rate bsr ON tx.currency_code = bsr.currency_code")
 
 	groupX := "tx.type, ch.code, chxf.code, pt.code, tx.merchant_code, settlement_time"
 	orderX := "settlement_time ASC,currency_code ASC,merchant_code ASC,transaction_type DESC"
