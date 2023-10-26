@@ -72,7 +72,7 @@ func InterMerchantReport(db *gorm.DB, req *types.MerchantReportQueryRequest, ctx
 		"tx.currency_code     AS currency_code," +
 		"pt.`name`            AS pay_type_name," +
 		"mcr.fee              AS merchant_fee," +
-		"CASE WHEN tx.`type` = 'XF' AND mcr.handling_fee = 0 OR mcr.handling_fee IS NULL THEN bsr.withdraw_handling_fee ELSE mcr.handling_fee END AS merchant_handling_fee," +
+		"CASE WHEN tx.`type` = 'XF' AND (mcr.handling_fee = 0 OR mcr.handling_fee IS NULL) THEN bsr.withdraw_handling_fee ELSE mcr.handling_fee END AS merchant_handling_fee," +
 		"cpt.fee              AS channel_fee," +
 		"cpt.handling_fee     AS channel_handling_fee," +
 		"SUM(tx.order_amount) AS order_amount," + //訂單總額
