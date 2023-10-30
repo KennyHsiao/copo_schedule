@@ -50,6 +50,9 @@ func (l *MerhchantReport) Run() {
 	}, l.ctx); err != nil {
 		logx.WithContext(l.ctx).Errorf("商户报表结算错误:%s", err.Error())
 	}
+
+	logx.WithContext(l.ctx).Infof("商户报表結算筆數: %d", len(resp.List))
+
 	if len(resp.List) > 0 {
 		var merchantReportCreates []types.MerchantReportCreate
 
