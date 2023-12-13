@@ -11,7 +11,7 @@ import (
 )
 
 func CallTelegramNotify(ctx context.Context, msg *types.TelegramNotifyRequest) error {
-	url := fmt.Sprintf("%s:20003/telegram/notify", viper.GetString("SERVER"))
+	url := fmt.Sprintf("%s:%d/telegram/notify", viper.GetString("SERVER"), viper.GetInt("TELEGRAM_PORT"))
 	span := trace.SpanFromContext(ctx)
 	if _, err := gozzle.Post(url).Timeout(25).Trace(span).JSON(msg); err != nil {
 		logx.WithContext(ctx).Errorf("馀额报警通知失敗:%s", err.Error())
@@ -21,7 +21,7 @@ func CallTelegramNotify(ctx context.Context, msg *types.TelegramNotifyRequest) e
 }
 
 func CallNoticeUrlForBalance(ctx context.Context, msg *types.TelegramNotifyRequest) error {
-	url := fmt.Sprintf("%s:20003/telegram/notify_balance", viper.GetString("SERVER"))
+	url := fmt.Sprintf("%s:%d/telegram/notify_balance", viper.GetString("SERVER"), viper.GetInt("TELEGRAM_PORT"))
 	span := trace.SpanFromContext(ctx)
 	if _, err := gozzle.Post(url).Timeout(25).Trace(span).JSON(msg); err != nil {
 		logx.WithContext(ctx).Errorf("馀额报警通知失敗:%s", err.Error())
