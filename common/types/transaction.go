@@ -2498,6 +2498,7 @@ type SystemParams struct {
 }
 
 type TelegramNotifyRequest struct {
+	ChatID  int    `json:"chatId, optional"`
 	Message string `json:"message"`
 }
 

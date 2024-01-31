@@ -7,6 +7,7 @@ import (
 	"github.com/copo888/copo_schedule/common/types"
 	"github.com/copo888/copo_schedule/helper"
 	telegramNotify "github.com/copo888/copo_schedule/service"
+	"github.com/spf13/viper"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -38,6 +39,7 @@ func (l *NotifyProxyOrder) Run() {
 		}
 
 		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
+			ChatID:  viper.GetInt("TELEGRAM_NOTIFY_CHAT_ID_FOR_PROXY"),
 			Message: msg,
 		})
 	}

@@ -14,7 +14,7 @@ func CallTelegramNotify(ctx context.Context, msg *types.TelegramNotifyRequest) e
 	url := fmt.Sprintf("%s:%d/telegram/notify", viper.GetString("SERVER"), viper.GetInt("TELEGRAM_PORT"))
 	span := trace.SpanFromContext(ctx)
 	if _, err := gozzle.Post(url).Timeout(25).Trace(span).JSON(msg); err != nil {
-		logx.WithContext(ctx).Errorf("馀额报警通知失敗:%s", err.Error())
+		logx.WithContext(ctx).Errorf("代付单报警通知失敗:%s", err.Error())
 	}
 
 	return nil
