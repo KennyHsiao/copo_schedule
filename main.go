@@ -78,10 +78,10 @@ func main() {
 	/**
 	代付交易中的单，2分钟没有回调则通知警讯
 	*/
-	//c.AddJob("0 0/2 * * * * ", //2分鐘
-	//	cron.NewChain(cron.SkipIfStillRunning(logger)).
-	//		Then(&cronjob.NotifyProxyOrder{}),
-	//)
+	c.AddJob("0 0/10 * * * * ", //2分鐘
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.NotifyProxyOrder{}),
+	)
 
 	/**
 	 * 处里超过5分钟渠道尚未回调的代付提单
