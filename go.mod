@@ -1,6 +1,6 @@
 module github.com/copo888/copo_schedule
 
-go 1.17
+go 1.20
 
 require (
 	github.com/neccoys/go-driver v0.0.0-20220411064014-321cfa09a003
@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/copo888/transaction_service v0.0.0-20220729060744-989c0c9a78b4
+	github.com/copo888/transaction_service v0.0.0-20240710023324-ee1d3e7bf958
 	github.com/gioco-play/gozzle v0.0.0-20220214095646-81ab484dee5d
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.11.0
@@ -40,7 +40,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
@@ -97,7 +97,7 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220228195345-15d65a4533f7 // indirect
 	google.golang.org/grpc v1.45.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
