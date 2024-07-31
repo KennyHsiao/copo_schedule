@@ -47,13 +47,13 @@ func (l *MerchantBalancesCheck) Run() {
 
 			var totalPtBalance float64
 			for _, balance := range merchantPtBalances {
-				totalPtBalance = utils.FloatAdd(totalPtBalance, balance.Balance)
+				totalPtBalance = utils.FloatAddC(totalPtBalance, balance.Balance, balance.CurrencyCode)
 			}
 			if err := helper.COPO_DB.Table("mc_merchant_balances").
 				Where("merchant_code = ?", merchantCode).
 				Where("currency_code = ?", currencyCode).
 				Where("balance_type = ?", "DFB").
-				Find(&merchantDfbBalance).Error;err != nil {
+				Find(&merchantDfbBalance).Error; err != nil {
 				logx.WithContext(l.ctx).Errorf("取得商户馀额錯誤:", err.Error())
 			}
 
@@ -61,31 +61,31 @@ func (l *MerchantBalancesCheck) Run() {
 				Where("merchant_code = ?", merchantCode).
 				Where("currency_code = ?", currencyCode).
 				Where("balance_type = ?", "XFB").
-				Find(&merchantXfbBalance).Error;err != nil {
+				Find(&merchantXfbBalance).Error; err != nil {
 				logx.WithContext(l.ctx).Errorf("取得商户馀额錯誤:", err.Error())
 			}
-			totalBalance := utils.FloatAdd(merchantDfbBalance.Balance, merchantXfbBalance.Balance)
+			totalBalance := utils.FloatAddC(merchantDfbBalance.Balance, merchantXfbBalance.Balance, currencyCode)
 
 			if totalBalance != totalPtBalance {
 				if _, ok := merchantMap[merchantCode]; ok {
-					msg += "\n币别："+currencyCode
-					msg += "\n    可代付馀额："+ l.RemoveZero(merchantDfbBalance.Balance)
-					msg += "\n    可下发馀额："+ l.RemoveZero(merchantXfbBalance.Balance)
+					msg += "\n币别：" + currencyCode
+					msg += "\n    可代付馀额：" + l.RemoveZero(merchantDfbBalance.Balance)
+					msg += "\n    可下发馀额：" + l.RemoveZero(merchantXfbBalance.Balance)
 					for _, balance := range merchantPtBalances {
-						msg += "\n    "+balance.Name+":"+l.RemoveZero(balance.Balance)
+						msg += "\n    " + balance.Name + ":" + l.RemoveZero(balance.Balance)
 					}
-					diffBalance := utils.FloatSub(totalBalance, totalPtBalance)
-					msg += "\n    差异："+ l.RemoveZero(diffBalance)
-				}else {
+					diffBalance := utils.FloatSubC(totalBalance, totalPtBalance, currencyCode)
+					msg += "\n    差异：" + l.RemoveZero(diffBalance)
+				} else {
 					merchantMap[merchantCode] = merchantCode
-					msg += "\n\n商户号："+ merchantCode +"\n币别："+ currencyCode
-					msg += "\n    可代付馀额："+ l.RemoveZero(merchantDfbBalance.Balance)
-					msg += "\n    可下发馀额："+ l.RemoveZero(merchantXfbBalance.Balance)
+					msg += "\n\n商户号：" + merchantCode + "\n币别：" + currencyCode
+					msg += "\n    可代付馀额：" + l.RemoveZero(merchantDfbBalance.Balance)
+					msg += "\n    可下发馀额：" + l.RemoveZero(merchantXfbBalance.Balance)
 					for _, balance := range merchantPtBalances {
-						msg += "\n    "+balance.Name+":"+l.RemoveZero(balance.Balance)
+						msg += "\n    " + balance.Name + ":" + l.RemoveZero(balance.Balance)
 					}
-					diffBalance := utils.FloatSub(totalBalance, totalPtBalance)
-					msg += "\n    差异："+ l.RemoveZero(diffBalance)
+					diffBalance := utils.FloatSubC(totalBalance, totalPtBalance, currencyCode)
+					msg += "\n    差异：" + l.RemoveZero(diffBalance)
 				}
 			}
 		}
@@ -99,7 +99,7 @@ func (l *MerchantBalancesCheck) Run() {
 	logx.WithContext(l.ctx).Infof("檢查商戶子錢包結束")
 }
 
-func(l *MerchantBalancesCheck) RemoveZero(val float64) string {
+func (l *MerchantBalancesCheck) RemoveZero(val float64) string {
 	result := strconv.FormatFloat(val, 'f', 4, 64)
 	// 去除尾数0
 	for strings.HasSuffix(result, "0") {

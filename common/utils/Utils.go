@@ -58,7 +58,17 @@ func Contain(obj interface{}, target interface{}) bool {
 	return false
 }
 
-//FloatMul 浮點數乘法 (precision=4)
+// FloatMulC : 增加currency 判别决定小数位数(预设4位)
+func FloatMulC(s float64, p float64, currency ...string) float64 {
+
+	if len(currency) > 0 && (strings.EqualFold(currency[0], "BTC") || strings.EqualFold(currency[0], "ETH")) {
+		return FloatMul(s, p, 7)
+	} else {
+		return FloatMul(s, p)
+	}
+}
+
+// FloatMul 浮點數乘法 (precision=4)
 func FloatMul(s float64, p float64, precisions ...int32) float64 {
 
 	f1 := decimal.NewFromFloat(s)
@@ -76,7 +86,17 @@ func FloatMul(s float64, p float64, precisions ...int32) float64 {
 	return res
 }
 
-//FloatDiv 浮點數除法 (precision=4)
+// FloatMulC : 增加currency 判别决定小数位数
+func FloatDivC(s float64, p float64, currency ...string) float64 {
+
+	if len(currency) > 0 && (strings.EqualFold(currency[0], "BTC") || strings.EqualFold(currency[0], "ETH")) {
+		return FloatDiv(s, p, 7)
+	} else {
+		return FloatDiv(s, p)
+	}
+}
+
+// FloatDiv 浮點數除法 (precision=4)
 func FloatDiv(s float64, p float64, precisions ...int32) float64 {
 
 	f1 := decimal.NewFromFloat(s)
@@ -93,7 +113,17 @@ func FloatDiv(s float64, p float64, precisions ...int32) float64 {
 	return res
 }
 
-//FloatSub 浮點數減法 (precision=4)
+// FloatSubC : 增加currency 判别决定小数位数
+func FloatSubC(s float64, p float64, currency ...string) float64 {
+
+	if len(currency) > 0 && (strings.EqualFold(currency[0], "BTC") || strings.EqualFold(currency[0], "ETH")) {
+		return FloatSub(s, p, 7)
+	} else {
+		return FloatSub(s, p)
+	}
+}
+
+// FloatSub 浮點數減法 (precision=4)
 func FloatSub(s float64, p float64, precisions ...int32) float64 {
 
 	f1 := decimal.NewFromFloat(s)
@@ -110,7 +140,17 @@ func FloatSub(s float64, p float64, precisions ...int32) float64 {
 	return res
 }
 
-//FloatAdd 浮點數加法 (precision=4)
+// FloatAddC : 增加currency 判别决定小数位数
+func FloatAddC(s float64, p float64, currency ...string) float64 {
+
+	if len(currency) > 0 && (strings.EqualFold(currency[0], "BTC") || strings.EqualFold(currency[0], "ETH")) {
+		return FloatAdd(s, p, 7)
+	} else {
+		return FloatAdd(s, p)
+	}
+}
+
+// FloatAdd 浮點數加法 (precision=4)
 func FloatAdd(s float64, p float64, precisions ...int32) float64 {
 
 	f1 := decimal.NewFromFloat(s)
