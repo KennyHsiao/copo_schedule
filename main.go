@@ -100,6 +100,12 @@ func main() {
 			Then(&cronjob.MerhchantReport{}),
 	)
 
+	//重算商戶報表 每月2號 04:00:00執行
+	c.AddJob("0 0 4 2 * ?",
+		cron.NewChain(cron.SkipIfStillRunning(logger)).
+			Then(&cronjob.ReCalMerchantReport{}),
+	)
+
 	// (補算傭金利潤Schedule) 整點開始每5分鐘執行
 	c.AddJob("0 0/5 * * * ?",
 		cron.NewChain(cron.SkipIfStillRunning(logger)).
