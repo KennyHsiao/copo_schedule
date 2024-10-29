@@ -313,6 +313,7 @@ type ChannelData struct {
 	ProxypayBalance         float64          `json:"proxypayBalance, optional"`
 	BankCodeMapList         []BankCodeMap    `json:"bankCodeMapList, optional" gorm:"-"`
 	Banks                   []Bank           `json:"banks, optional" gorm:"many2many:ch_channel_banks;foreignKey:Code;joinForeignKey:channel_code;references:bank_no;joinReferences:bank_no"`
+	GroupId                 string           `json:"group_id, optional"`
 }
 
 type PayTypeMap struct {

@@ -9,6 +9,8 @@ import (
 	telegramNotify "github.com/copo888/copo_schedule/service"
 	"github.com/spf13/viper"
 	"github.com/zeromicro/go-zero/core/logx"
+	"strconv"
+	"sync"
 )
 
 type NotifyProxyOrder struct {
@@ -32,11 +34,18 @@ func (l *NotifyProxyOrder) Run() {
 	}
 
 	if len(orders) > 0 {
+		// 创建一个 map 对 orders 按 channelCode 分类
+		orderMap := make(map[string][]types.OrderX)
+
 		var msg string
 		msg = fmt.Sprintf("代付提单超过%s分钟未处理： \n", systemParam.Value)
 		for _, order := range orders {
 			msg += fmt.Sprintf("商户号：%s\n订单号：%s\n提单金额：%.0f \n\n", order.MerchantCode, order.OrderNo, order.OrderAmount)
+			// 创建一个 map 对 orders 按 channelCode 分类
+			orderMap[order.ChannelCode] = append(orderMap[order.ChannelCode], order)
 		}
+
+		go l.notifyChannelIdleOrders(&orderMap, systemParam.Value)
 
 		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
 			ChatID:  viper.GetInt("TELEGRAM_NOTIFY_CHAT_ID_FOR_PROXY"),
@@ -45,4 +54,43 @@ func (l *NotifyProxyOrder) Run() {
 	}
 
 	logx.WithContext(l.ctx).Infof("启动处理交易中，未回调的提单，笔数：%d 笔", len(orders))
+}
+
+func (l *NotifyProxyOrder) notifyChannelIdleOrders(orderMap *map[string][]types.OrderX, minute string) {
+	var wg sync.WaitGroup
+	for channelCode, groupOrders := range *orderMap {
+		wg.Add(1)
+
+		if groupOrders != nil && len(groupOrders) > 0 && len(channelCode) > 0 {
+
+			go func(orderMap *[]types.OrderX, channelCode string) {
+				defer wg.Done()
+				channel := &types.ChannelData{}
+				if err := helper.COPO_DB.Table("ch_channels").Where("code = ?", channelCode).Take(channel).Error; err != nil {
+					logx.WithContext(l.ctx).Errorf("渠道Err : %s", err.Error())
+				}
+
+				if len(channel.GroupId) > 0 {
+					msg := fmt.Sprintf("代付提单超过%s分钟未处理。\t烦请加急处理，感谢!\n订单号: \n", minute)
+					msg += fmt.Sprintf("The payout bills of lading have not been processed for over %s minutes.\nPlease expedite the process, thank you!\nOrderNumber:\n\n", minute)
+
+					for _, order := range groupOrders {
+						msg += order.OrderNo + "\n"
+					}
+
+					groupId, _ := strconv.Atoi(channel.GroupId)
+					telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
+						ChatID:  groupId,
+						Message: msg,
+					})
+
+				}
+
+			}(&groupOrders, channelCode)
+
+			// 等待所有 goroutine 完成
+			wg.Wait()
+			logx.WithContext(l.ctx).Infof("渠道批量出款单加急通知完成!")
+		}
+	}
 }
