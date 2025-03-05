@@ -3,10 +3,12 @@ package cronjob
 import (
 	"context"
 	"fmt"
+	"github.com/copo888/copo_schedule/common/types"
 	"github.com/copo888/copo_schedule/helper"
-	"github.com/copo888/copo_schedule/service/linenotifyService"
+	telegramNotify "github.com/copo888/copo_schedule/service"
 	"github.com/copo888/transaction_service/common/response"
 	"github.com/copo888/transaction_service/rpc/transaction"
+	"github.com/spf13/viper"
 	"github.com/zeromicro/go-zero/core/logx"
 	"time"
 )
@@ -33,15 +35,27 @@ func (l *CommissionMonthReport) Run() {
 	if err != nil {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", err.Error())
 		msg := fmt.Sprintf("(計算月傭金報表 Schedule)發生錯誤：'%s'", err.Error())
-		linenotifyService.DoCallLineSendURL(l.ctx, msg)
+		//linenotifyService.DoCallLineSendURL(l.ctx, msg)
+		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
+			ChatID:  viper.GetInt("TELEGRAM_NOTIFY_CHAT_ID_FOR_ERROR"),
+			Message: msg,
+		})
 	} else if rpcResp == nil {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：rpcResp is nil")
 		msg := fmt.Sprintf("(計算月傭金報表 Schedule)發生錯誤：rpcResp is nil")
-		linenotifyService.DoCallLineSendURL(l.ctx, msg)
+		//linenotifyService.DoCallLineSendURL(l.ctx, msg)
+		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
+			ChatID:  viper.GetInt("TELEGRAM_NOTIFY_CHAT_ID_FOR_ERROR"),
+			Message: msg,
+		})
 	} else if rpcResp.Code != response.API_SUCCESS {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule)發生錯誤：%s", rpcResp.Message)
 		msg := fmt.Sprintf("(計算月傭金報表 Schedule)發生錯誤：'%s'", rpcResp.Message)
-		linenotifyService.DoCallLineSendURL(l.ctx, msg)
+		//linenotifyService.DoCallLineSendURL(l.ctx, msg)
+		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
+			ChatID:  viper.GetInt("TELEGRAM_NOTIFY_CHAT_ID_FOR_ERROR"),
+			Message: msg,
+		})
 	} else {
 		logx.WithContext(l.ctx).Errorf("(計算月傭金報表 Schedule) 完成")
 	}
