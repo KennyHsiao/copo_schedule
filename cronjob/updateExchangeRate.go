@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/copo888/copo_schedule/common/types"
 	"github.com/copo888/copo_schedule/helper"
+	telegramNotify "github.com/copo888/copo_schedule/service"
+	"github.com/spf13/viper"
 	"github.com/zeromicro/go-zero/core/logx"
 	"io"
 	"log"
@@ -18,10 +21,13 @@ type UpdateExchangeRate struct {
 
 func (l UpdateExchangeRate) Run() {
 
-	url := "https://www.okx.com/v4/c2c/express/price?crypto=USDT&fiat=CNY&side=sell"
-	resp, err := http.Get(url)
+	resp, err := http.Get(viper.GetString("OKX_USDT_CNY_URL"))
 	if err != nil {
 		log.Fatalf("GET failed: %v", err)
+		telegramNotify.CallTelegramNotify(l.ctx, &types.TelegramNotifyRequest{
+			ChatID:  viper.GetInt("TELEGRAM_NOTIFY_CHAT_ID_FOR_ERROR"),
+			Message: err.Error(),
+		})
 	}
 	defer resp.Body.Close()
 
