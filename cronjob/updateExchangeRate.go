@@ -3,7 +3,6 @@ package cronjob
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/copo888/copo_schedule/common/types"
 	"github.com/copo888/copo_schedule/helper"
 	telegramNotify "github.com/copo888/copo_schedule/service"
@@ -12,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 type UpdateExchangeRate struct {
@@ -45,14 +45,16 @@ func (l UpdateExchangeRate) Run() {
 		log.Fatalf("API error: code=%d, msg=%s", data.Code, data.Msg)
 	}
 
-	price := data.Data.Price
+	updates := map[string]interface{}{
+		"u_rate":     data.Data.Price,
+		"updated_at": time.Now().UTC(),
+	}
 	if err := helper.COPO_DB.Table("bs_system_rate").
 		Where("currency_code = 'CNY'").
-		Update("u_rate", price).Error; err != nil {
+		Updates(updates).Error; err != nil {
 		log.Fatalf("DB update failed: %v", err)
 	}
 
-	fmt.Printf("Updated u_exchange_rate to %s for CNY\n", price)
 }
 
 type Response struct {
