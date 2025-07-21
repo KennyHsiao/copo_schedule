@@ -1,6 +1,6 @@
 module github.com/copo888/copo_schedule
 
-go 1.20
+go 1.21
 
 require (
 	github.com/neccoys/go-driver v0.0.0-20220411064014-321cfa09a003
